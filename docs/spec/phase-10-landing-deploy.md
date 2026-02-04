@@ -465,7 +465,7 @@ vercel link
 
 # 환경변수 설정
 vercel env add NEXT_PUBLIC_SUPABASE_URL
-vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+vercel env add NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
 vercel env add SUPABASE_SERVICE_ROLE_KEY
 vercel env add ANTHROPIC_API_KEY
 vercel env add FAL_KEY
@@ -490,7 +490,7 @@ vercel --prod
 ```bash
 # ── Supabase (필수) ──
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
 # ── AI Services (필수) ──
