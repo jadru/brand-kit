@@ -7,10 +7,8 @@ import {
   UnauthorizedError,
   ValidationError,
   UsageLimitError,
-  PlanRequiredError,
   AIGenerationError,
 } from '@/lib/utils/errors'
-import type { Plan } from '@/types/database'
 
 export async function POST(request: Request) {
   try {
@@ -22,17 +20,8 @@ export async function POST(request: Request) {
     }
 
     const admin = getSupabaseAdmin()
-    const { data: userData } = await admin
-      .from('users')
-      .select('plan')
-      .eq('id', user.id)
-      .single()
 
-    const userPlan = (userData as { plan: Plan } | null)?.plan
-    if (userPlan !== 'pro') {
-      throw new PlanRequiredError('AI 아이콘 생성')
-    }
-
+    // 사용량 기반으로 체크 (Free: 월 3회, Pro: 월 50회)
     const usage = await checkUsage(admin, user.id, 'ai_icons_used_this_month')
 
     if (!usage.allowed) {
@@ -57,7 +46,6 @@ export async function POST(request: Request) {
     if (error instanceof UnauthorizedError ||
         error instanceof ValidationError ||
         error instanceof UsageLimitError ||
-        error instanceof PlanRequiredError ||
         error instanceof AIGenerationError) {
       return handleApiError(error)
     }

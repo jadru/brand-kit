@@ -7,7 +7,7 @@ export const brandProfileSchema = z.object({
 
   style_direction: z.enum(
     ['minimal', 'playful', 'corporate', 'tech', 'custom'],
-    { required_error: 'Select a style direction' }
+    { error: 'Select a style direction' }
   ),
 
   primary_color: z.string()

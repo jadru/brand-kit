@@ -1,27 +1,46 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import {
+  handleApiError,
+  UnauthorizedError,
+  NotFoundError,
+} from '@/lib/utils/errors'
+import type { Project } from '@/types/database'
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { projectId } = await params
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) {
+      throw new UnauthorizedError()
+    }
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select('status, assets_zip_url')
-    .eq('id', projectId)
-    .eq('user_id', user.id)
-    .single()
+    const { data: projectData } = await supabase
+      .from('projects')
+      .select('status, assets_zip_url')
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+      .single()
 
-  if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    const project = projectData as Pick<
+      Project,
+      'status' | 'assets_zip_url'
+    > | null
+    if (!project) {
+      throw new NotFoundError('프로젝트')
+    }
 
-  return NextResponse.json({
-    status: (project as Record<string, unknown>).status,
-    url: (project as Record<string, unknown>).assets_zip_url,
-  })
+    return Response.json({
+      status: project.status,
+      url: project.assets_zip_url,
+    })
+  } catch (error) {
+    return handleApiError(error)
+  }
 }

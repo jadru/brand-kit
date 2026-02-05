@@ -1,0 +1,440 @@
+{
+  "common": {
+    "brandName": "BrandKit",
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Sign out",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "or": "or",
+    "unlimited": "Unlimited",
+    "mainNavigation": "Main navigation"
+  },
+
+  "demo": {
+    "meta": {
+      "title": "Try BrandKit Demo",
+      "description": "Experience BrandKit without signing up. See how AI generates brand assets instantly."
+    },
+    "demoBadge": "Live Demo",
+    "signupCta": "Sign up free",
+    "title": "See BrandKit in action",
+    "description": "Preview how BrandKit generates 12+ brand assets from a single brand profile. No signup required.",
+    "sampleBrand": {
+      "name": "Acme SaaS",
+      "style": "Style",
+      "tagline": "Build better software, faster"
+    },
+    "colorPalette": "Color Palette",
+    "keywords": "Brand Keywords",
+    "ogPreview": "OG Image Preview",
+    "generatedAssets": "Generated Assets",
+    "assetsDescription": "All these assets are generated in under 60 seconds",
+    "downloadTitle": "Ready to download?",
+    "downloadDescription": "Create a free account to download your assets and create your own brand profiles.",
+    "downloadCta": "Download All Assets",
+    "freeNote": "Free plan includes 3 projects/month",
+    "modal": {
+      "title": "Create your free account",
+      "description": "Sign up to download assets and start creating your own brand profiles.",
+      "signupCta": "Sign up free",
+      "loginCta": "Already have an account? Log in",
+      "close": "Maybe later"
+    }
+  },
+
+  "landing": {
+    "hero": {
+      "badge": "AI-POWERED BRAND ENGINE",
+      "headline": "Save brand style.",
+      "headlineSub": "Auto-generate assets.",
+      "description": "Save colors and styles to Brand Profile, and AI generates Favicon, OG Image, App Icon and all platform assets.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "Learn more",
+      "trustNoCreditCard": "No credit card required",
+      "trustFreePlan": "Free forever plan",
+      "stats": {
+        "users": "CREATORS",
+        "assetsGenerated": "ASSETS GENERATED",
+        "assetTypes": "ASSET TYPES",
+        "generation": "GENERATION"
+      }
+    },
+    "features": {
+      "sectionLabel": "Features",
+      "headline": "Everything you need for",
+      "headlineSub": "brand assets.",
+      "aiCopy": {
+        "title": "AI-Powered Brand Copy",
+        "description": "AI generates SEO-optimized headlines, taglines, and OG descriptions. Get brand-aligned copy instantly."
+      },
+      "designSystem": {
+        "title": "Consistent Design System",
+        "description": "Save styles to Brand Profile and apply consistently across multiple projects."
+      },
+      "platformAssets": {
+        "title": "Platform Asset Packages",
+        "description": "Generate all required assets for Web, iOS, and Android at once."
+      },
+      "developerFriendly": {
+        "title": "Developer Friendly",
+        "description": "Code snippets for major frameworks included. Copy and apply instantly."
+      },
+      "fastGeneration": {
+        "title": "Fast Generation",
+        "description": "Generate all assets and ZIP package in under 60 seconds."
+      },
+      "secureStorage": {
+        "title": "Secure Storage",
+        "description": "Safely stored in the cloud and available for re-download anytime."
+      }
+    },
+    "howItWorks": {
+      "sectionLabel": "How it works",
+      "headline": "Brand assets in",
+      "headlineSub": "4 steps.",
+      "steps": {
+        "1": {
+          "title": "Save brand style",
+          "description": "Save colors, style direction, and keywords to Brand Profile."
+        },
+        "2": {
+          "title": "Select platform",
+          "description": "Choose Web, Mobile, or All platforms you need."
+        },
+        "3": {
+          "title": "AI generates all assets",
+          "description": "AI writes brand copy and generates optimized images."
+        },
+        "4": {
+          "title": "Download & apply",
+          "description": "Download ZIP and apply instantly with code snippets."
+        }
+      }
+    },
+    "pricing": {
+      "sectionLabel": "Pricing",
+      "headline": "Simple pricing,",
+      "headlineSub": "powerful features.",
+      "description": "Start free, upgrade to Pro when needed. No credit card required.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save",
+      "perMonth": "month",
+      "billedYearly": "Billed ${total}/year (save ${savings})",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "interval": "forever",
+        "description": "Basic features for personal projects",
+        "features": [
+          "3 projects/month",
+          "2 Brand Profiles",
+          "10 AI headlines/month",
+          "3 AI icons/month",
+          "Free style presets",
+          "Basic asset generation"
+        ],
+        "cta": "Start free"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$12",
+        "interval": "month",
+        "description": "Unlimited features for teams and pros",
+        "features": [
+          "Unlimited projects",
+          "5 Brand Profiles",
+          "Unlimited AI headlines",
+          "50 AI icons/month",
+          "All style presets",
+          "Priority support"
+        ],
+        "cta": "Start Pro",
+        "badge": "Most popular"
+      }
+    },
+    "cta": {
+      "badge": "START BUILDING TODAY",
+      "headline": "Get started",
+      "headlineSub": "today.",
+      "description": "Dramatically reduce time and cost for brand asset creation. Start with the free plan.",
+      "button": "Start for free",
+      "noCreditCard": "NO CREDIT CARD REQUIRED"
+    },
+    "testimonials": {
+      "sectionLabel": "Testimonials",
+      "headline": "Loved by",
+      "headlineSub": "creators worldwide.",
+      "description": "See what our users are saying about BrandKit",
+      "items": {
+        "1": {
+          "content": "BrandKit saved me hours of work. I used to spend half a day creating assets for each project. Now it takes 60 seconds.",
+          "author": "Jake Thompson",
+          "role": "Indie Maker"
+        },
+        "2": {
+          "content": "The AI-generated headlines are surprisingly good. They capture our brand voice perfectly every time.",
+          "author": "Sarah Chen",
+          "role": "Marketing Lead at StartupX"
+        },
+        "3": {
+          "content": "Finally, a tool that understands brand consistency. The color palette management is exactly what I needed.",
+          "author": "Mike Rodriguez",
+          "role": "Freelance Designer"
+        },
+        "4": {
+          "content": "We use BrandKit for all our client projects. The ROI is incredible - it pays for itself in the first project.",
+          "author": "Anna Kim",
+          "role": "Agency Owner"
+        }
+      },
+      "trustBadge1": "SOC 2 Compliant",
+      "trustBadge2": "99.9% Uptime",
+      "trustBadge3": "Fast Support"
+    },
+    "faq": {
+      "sectionLabel": "FAQ",
+      "headline": "Frequently asked",
+      "headlineSub": "questions.",
+      "description": "Everything you need to know about BrandKit",
+      "items": {
+        "1": {
+          "question": "What assets does BrandKit generate?",
+          "answer": "BrandKit generates over 12 types of brand assets including OG images, favicons, app icons (iOS & Android), Apple Touch icons, Twitter cards, and more. All assets are optimized for their respective platforms and delivered in a single ZIP file."
+        },
+        "2": {
+          "question": "Can I use the generated assets commercially?",
+          "answer": "Yes! All assets generated with BrandKit are yours to use commercially. There are no usage restrictions - use them for your products, client projects, or any commercial purpose."
+        },
+        "3": {
+          "question": "How does the AI headline generation work?",
+          "answer": "Our AI analyzes your brand profile, including keywords, style direction, and industry context, to generate SEO-optimized headlines, taglines, and descriptions that match your brand voice."
+        },
+        "4": {
+          "question": "What's the difference between Free and Pro plans?",
+          "answer": "The Free plan includes 3 projects/month, 2 brand profiles, and basic features. Pro unlocks unlimited projects, 5 brand profiles, AI icon generation, all style presets, and priority support."
+        },
+        "5": {
+          "question": "Can I cancel my subscription anytime?",
+          "answer": "Yes, you can cancel your subscription at any time. You'll continue to have access to Pro features until the end of your billing period. No questions asked."
+        },
+        "6": {
+          "question": "Do you offer refunds?",
+          "answer": "Yes, we offer a 14-day money-back guarantee. If you're not satisfied with BrandKit Pro, contact us within 14 days of purchase for a full refund."
+        }
+      },
+      "contactTitle": "Still have questions?",
+      "contactDescription": "Can't find the answer you're looking for? Reach out to our support team.",
+      "contactCta": "Contact support →"
+    },
+    "footer": {
+      "description": "Save brand style and AI auto-generates assets for all platforms.",
+      "product": "Product",
+      "account": "Account",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "howItWorks": "How it works",
+      "dashboard": "Dashboard",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "All rights reserved.",
+      "status": "All systems operational"
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "subtitle": "Sign in to your account to continue",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Log in",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "branding": {
+        "headline": "Brand assets",
+        "headlineSub": "automatically.",
+        "description": "Save styles to Brand Profile, and AI generates all platform assets.",
+        "stats": {
+          "assets": "ASSETS",
+          "speed": "SPEED"
+        }
+      }
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Auto-generate brand assets with AI",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPlaceholder": "Re-enter your password",
+      "submit": "Sign up with Email",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "success": {
+        "title": "Check your email",
+        "description": "We sent a confirmation link to {email}. Click the link to activate your account.",
+        "backToLogin": "Back to Login"
+      },
+      "branding": {
+        "headline": "Everything about your brand,",
+        "headlineSub": "in one place.",
+        "description": "Start for free. Auto-generate Favicon, OG Image, App Icon and all assets.",
+        "stats": {
+          "start": "START",
+          "perMonth": "PER MONTH"
+        }
+      }
+    },
+    "oauth": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "validation": {
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "passwordTooShort": "Password must be at least 6 characters."
+    }
+  },
+
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "brandProfiles": "Brand Profiles",
+      "settings": "Settings"
+    },
+    "plan": {
+      "label": "Plan",
+      "free": "Free",
+      "pro": "Pro"
+    }
+  },
+
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and subscription",
+    "account": {
+      "title": "Account",
+      "subtitle": "Your account information",
+      "email": "Email",
+      "userId": "User ID"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "subtitle": "Your current plan and usage limits",
+      "unlimited": "Unlimited access to all features",
+      "limited": "Basic features with usage limits",
+      "upgrade": "Upgrade to Pro",
+      "projectsPerMonth": "Projects / Month",
+      "aiHeadlines": "AI Headlines",
+      "brandProfiles": "Brand Profiles"
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Authentication and security settings",
+      "signout": "Sign out",
+      "signoutDesc": "Sign out of your account on this device"
+    }
+  },
+
+  "projects": {
+    "title": "Projects",
+    "total": "project(s) total",
+    "newProject": "New Project",
+    "empty": {
+      "title": "No projects yet",
+      "description": "Create your first project to get started",
+      "cta": "Create your first project"
+    },
+    "viewDetails": "View details"
+  },
+
+  "brandProfiles": {
+    "title": "Brand Profiles",
+    "profileCount": "{count}/{limit} profiles",
+    "upgradeNotice": "Free plan allows 1 profile. Upgrade to Pro for up to 5.",
+    "empty": {
+      "title": "No brand profiles yet.",
+      "cta": "Create your first profile"
+    },
+    "toast": {
+      "created": "Profile created",
+      "updated": "Profile updated",
+      "deleted": "Profile deleted"
+    }
+  },
+
+  "error": {
+    "title": "Something went wrong",
+    "unknown": "An unknown error occurred.",
+    "retry": "Try again",
+    "home": "Go home"
+  },
+
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you requested doesn't exist or has been moved.",
+    "home": "Go back home"
+  },
+
+  "validation": {
+    "required": "{field} is required",
+    "maxLength": "Must be {max} characters or less",
+    "invalidEmail": "Enter a valid email address",
+    "invalidColor": "Enter a valid HEX color",
+    "selectStyle": "Select a style direction",
+    "maxColors": "Maximum {max} secondary colors"
+  },
+
+  "metadata": {
+    "title": {
+      "default": "BrandKit - AI Brand Asset Generator",
+      "template": "%s | BrandKit"
+    },
+    "description": "Save your brand style and auto-generate all brand assets",
+    "keywords": "brand assets, favicon generator, og image, app icon, brand identity, AI copywriting",
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "Learn how BrandKit collects, uses, and protects your personal information"
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "Read the terms and conditions for using BrandKit services"
+    },
+    "login": {
+      "title": "Log in",
+      "description": "Sign in to your BrandKit account to manage your brand assets"
+    },
+    "signup": {
+      "title": "Sign up",
+      "description": "Create a free BrandKit account and start generating brand assets with AI"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Manage your brand assets and projects"
+    },
+    "projects": {
+      "title": "Projects",
+      "description": "View and manage your brand asset projects"
+    },
+    "brandProfiles": {
+      "title": "Brand Profiles",
+      "description": "Manage your brand profiles and style settings"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account and subscription settings"
+    }
+  }
+}

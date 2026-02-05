@@ -202,17 +202,17 @@ export interface Database {
 
 export const PLAN_LIMITS = {
   free: {
-    brand_profiles: 1,
+    brand_profiles: 2, // 핵심 가치 경험을 위해 1→2개로 상향
     projects_per_month: 3,
     ai_headlines_per_month: 10,
-    ai_icons_per_month: 5,
+    ai_icons_per_month: 3, // Free 사용자도 AI 아이콘 맛보기 허용
     style_presets: 'free_only' as const,
   },
   pro: {
     brand_profiles: 5,
     projects_per_month: Infinity,
     ai_headlines_per_month: Infinity,
-    ai_icons_per_month: Infinity,
+    ai_icons_per_month: 50, // Pro 플랜 월간 제한 명시
     style_presets: 'all' as const,
   },
 } as const

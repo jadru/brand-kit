@@ -1,6 +1,3 @@
--- Extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Enum Types
 CREATE TYPE plan_type AS ENUM ('free', 'pro');
 CREATE TYPE style_direction AS ENUM ('minimal', 'playful', 'corporate', 'tech', 'custom');
@@ -29,7 +26,7 @@ CREATE TABLE public.users (
 
 -- brand_profiles
 CREATE TABLE public.brand_profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   style_direction style_direction NOT NULL DEFAULT 'minimal',
@@ -47,7 +44,7 @@ CREATE TABLE public.brand_profiles (
 
 -- style_presets
 CREATE TABLE public.style_presets (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   is_free BOOLEAN NOT NULL DEFAULT false,
@@ -67,7 +64,7 @@ CREATE TABLE public.style_presets (
 
 -- projects
 CREATE TABLE public.projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   brand_profile_id UUID REFERENCES public.brand_profiles(id) ON DELETE SET NULL,
   style_preset_id UUID NOT NULL REFERENCES public.style_presets(id),

@@ -1,11 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { HeadlineResponse } from '@/types/wizard'
+import { composeMetadataPrompt } from '@/lib/prompts'
+import type { MetadataPromptConfig } from '@/lib/prompts'
+import { AI_CONFIG } from '@/lib/config/ai'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })
 
-const SYSTEM_PROMPT = `You are a senior brand copywriter specializing in tech startups and SaaS products.
+// 기본 시스템 프롬프트 (promptConfig 없을 때 사용)
+const DEFAULT_SYSTEM_PROMPT = `You are a senior brand copywriter specializing in tech startups and SaaS products.
 Your task is to generate SEO-optimized, conversion-focused copy for app/web projects.
 
 ## Context
@@ -38,23 +42,45 @@ interface GenerateHeadlinesParams {
   platform: string
   brandKeywords?: string[]
   brandStyleDirection?: string
+  promptConfig?: MetadataPromptConfig
 }
 
+/**
+ * AI 브랜드 카피 생성
+ * Claude를 사용하여 프로젝트에 맞는 헤드라인, 태그라인, OG 설명을 생성합니다.
+ */
 export async function generateHeadlines(
   params: GenerateHeadlinesParams
 ): Promise<HeadlineResponse> {
-  const userPrompt = `Project Name: ${params.projectName}
+  let systemPrompt: string
+  let userPrompt: string
+
+  if (params.promptConfig) {
+    const composed = composeMetadataPrompt(params.promptConfig, {
+      name: params.projectName,
+      description: params.description,
+      platform: params.platform,
+      brandKeywords: params.brandKeywords,
+      brandStyleDirection: params.brandStyleDirection,
+    })
+    systemPrompt = composed.systemPrompt
+    userPrompt = composed.userPrompt
+  } else {
+    // 기본 방식 (promptConfig 없는 경우)
+    systemPrompt = DEFAULT_SYSTEM_PROMPT
+    userPrompt = `Project Name: ${params.projectName}
 Description: ${params.description || 'No description provided'}
 Platform: ${params.platform}
 Brand Keywords: ${params.brandKeywords?.join(', ') || 'Not specified'}
 Brand Style: ${params.brandStyleDirection || 'Not specified'}
 
 Generate brand copy for this project.`
+  }
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    system: SYSTEM_PROMPT,
+    model: AI_CONFIG.claude.model,
+    max_tokens: AI_CONFIG.claude.maxTokens,
+    system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   })
 
@@ -64,4 +90,27 @@ Generate brand copy for this project.`
   const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
 
   return JSON.parse(cleaned)
+}
+
+/**
+ * @deprecated generateHeadlines를 대신 사용하세요
+ */
+export async function generateHeadlinesWithPromptConfig(
+  projectContext: {
+    name: string
+    description?: string
+    platform: string
+    brandKeywords?: string[]
+    brandStyleDirection?: string
+  },
+  promptConfig: MetadataPromptConfig
+): Promise<HeadlineResponse> {
+  return generateHeadlines({
+    projectName: projectContext.name,
+    description: projectContext.description,
+    platform: projectContext.platform,
+    brandKeywords: projectContext.brandKeywords,
+    brandStyleDirection: projectContext.brandStyleDirection,
+    promptConfig,
+  })
 }

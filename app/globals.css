@@ -46,9 +46,9 @@
   --shadow-xl: 0 8px 16px rgb(0 0 0 / 0.06), 0 16px 48px rgb(0 0 0 / 0.12);
   --shadow-glow: 0 0 20px rgb(99 102 241 / 0.15), 0 0 60px rgb(99 102 241 / 0.08);
 
-  /* -- Font -- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+  /* -- Font (Pretendard Variable) -- */
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  --font-display: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-jet), 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -284,4 +284,478 @@ body {
 ::selection {
   background-color: rgba(99, 102, 241, 0.2);
   color: inherit;
+}
+
+/* -- Enhanced Typography Utilities -- */
+.tracking-display {
+  letter-spacing: -0.03em;
+}
+
+.tracking-headline {
+  letter-spacing: -0.02em;
+}
+
+/* -- Enhanced Focus Ring -- */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- Button Glow Effect -- */
+.btn-glow {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-dark));
+  opacity: 0;
+  z-index: -1;
+  filter: blur(8px);
+  transition: opacity 0.2s ease;
+}
+.btn-glow:hover::before {
+  opacity: 0.4;
+}
+
+/* -- Card Hover Enhancement -- */
+.card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* -- Subtle Grain Overlay -- */
+.grain-subtle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+/* -- Link Underline Animation -- */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* -- Stagger Animation Delays -- */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* -- Pulse Glow Animation -- */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* -- Smooth Scroll Reveal -- */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-reveal-up {
+  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* -- Reduced Motion Support (Accessibility) -- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in-up,
+  .animate-fade-in,
+  .animate-slide-in-right,
+  .animate-float,
+  .animate-shimmer,
+  .animate-slide-in-left,
+  .animate-pulse-glow,
+  .animate-reveal-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* -- CLS Prevention Utilities -- */
+.aspect-og {
+  aspect-ratio: 1200 / 630;
+}
+
+.aspect-icon {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+/* Prevent layout shift for images */
+.img-placeholder {
+  background: var(--color-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reserve space for lazy-loaded content */
+.content-placeholder {
+  min-height: var(--min-height, 100px);
+}
+
+/* -- Performance Optimizations -- */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ===== DESIGN ENHANCEMENTS ===== */
+
+/* -- Custom Scrollbar (webkit) -- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-surface-secondary);
+}
+
+/* -- Horizontal Scroll Container -- */
+.scroll-container {
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+/* -- Progress Bar with Gradient Animation -- */
+@keyframes progress-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.progress-bar-animated {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--color-accent-light) 50%,
+    var(--color-accent) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s ease-in-out infinite;
+}
+
+/* -- OKLCH Gradient Enhancement -- */
+.gradient-oklch {
+  background: linear-gradient(
+    135deg,
+    oklch(0.65 0.25 280) 0%,
+    oklch(0.55 0.22 300) 50%,
+    oklch(0.70 0.20 250) 100%
+  );
+}
+
+/* -- Enhanced Focus Ring with Glow -- */
+.focus-ring-glow:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--color-accent),
+    0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+/* -- Hover Scale Micro-interaction -- */
+.hover-scale {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* -- Stat Card Number Counter Animation -- */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count-up {
+  animation: countUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* -- Border Gradient Effect -- */
+.border-gradient {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-dark));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* -- Text Shine Effect -- */
+@keyframes text-shine {
+  0% {
+    background-position: -100% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.text-shine {
+  background: linear-gradient(
+    90deg,
+    var(--color-text-primary) 0%,
+    var(--color-accent) 50%,
+    var(--color-text-primary) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shine 3s linear infinite;
+}
+
+/* -- Badge Pill Enhancement -- */
+.badge-glow {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* -- Floating Action Button Shadow -- */
+.fab-shadow {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.fab-shadow:hover {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.16),
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* -- Input Glow on Focus -- */
+.input-glow:focus {
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.15),
+    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* -- Striped Loading Background -- */
+@keyframes stripe-animation {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+.loading-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-surface-tertiary),
+    var(--color-surface-tertiary) 10px,
+    var(--color-surface-secondary) 10px,
+    var(--color-surface-secondary) 20px
+  );
+  background-size: 40px 40px;
+  animation: stripe-animation 1s linear infinite;
+}
+
+/* ===== ACCESSIBILITY UTILITIES ===== */
+
+/* -- Screen Reader Only -- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* -- Focus Visible Indicator -- */
+.focus-visible-ring:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* -- Touch Target Minimum Size (44px) -- */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* -- Aria Live Regions -- */
+.aria-live-polite {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* -- Reduced Motion: Extra Protection -- */
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-fade-in,
+  .motion-safe\:animate-slide-up {
+    animation: none !important;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -- High Contrast Mode Support -- */
+@media (prefers-contrast: high) {
+  .border-white\/10 {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .text-white\/40,
+  .text-white\/50 {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .bg-white\/5 {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* -- Focus Trap Visual Indicator -- */
+[data-focus-trap="active"] {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 4px;
 }

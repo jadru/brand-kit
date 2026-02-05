@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { LEMONSQUEEZY_CONFIG } from '@/lib/lemonsqueezy/config'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logger } from '@/lib/utils/logger'
 import type {
   LemonSqueezyWebhookPayload,
   LemonSqueezySubscriptionData,
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
   const eventName: LemonSqueezyEventName = event.meta.event_name
   const data: LemonSqueezySubscriptionData = event.data
 
-  console.log('LemonSqueezy Webhook:', eventName, data.id)
+  logger.info(`LemonSqueezy Webhook: ${eventName}`, { id: data.id })
 
   try {
     switch (eventName) {
@@ -47,12 +48,12 @@ export async function POST(request: Request) {
         await handlePaymentFailed(data)
         break
       default:
-        console.log('Unhandled event:', eventName)
+        logger.info(`Unhandled webhook event: ${eventName}`)
     }
 
     return new Response('OK', { status: 200 })
   } catch (error) {
-    console.error('Webhook error:', error)
+    logger.error('Webhook processing error', error)
     return new Response('Internal error', { status: 500 })
   }
 }
@@ -73,7 +74,7 @@ async function handleSubscriptionCreated(data: LemonSqueezySubscriptionData) {
     .single()
 
   if (!user) {
-    console.warn(`User ${userId} not found, skipping subscription creation`)
+    logger.warn(`User ${userId} not found, skipping subscription creation`)
     return
   }
 
@@ -88,7 +89,7 @@ async function handleSubscriptionCreated(data: LemonSqueezySubscriptionData) {
 
   if (error) throw new Error(`Failed to update user plan: ${error.message}`)
 
-  console.log('Subscription created:', userId, subscriptionId)
+  logger.info(`Subscription created: ${userId}`, { subscriptionId })
 }
 
 async function handleSubscriptionUpdated(data: LemonSqueezySubscriptionData) {
@@ -111,7 +112,7 @@ async function handleSubscriptionUpdated(data: LemonSqueezySubscriptionData) {
     if (error) throw new Error(`Failed to update subscription: ${error.message}`)
   }
 
-  console.log('Subscription updated:', subscriptionId, status)
+  logger.info(`Subscription updated: ${subscriptionId}`, { status })
 }
 
 async function handleSubscriptionCancelled(data: LemonSqueezySubscriptionData) {
@@ -125,7 +126,7 @@ async function handleSubscriptionCancelled(data: LemonSqueezySubscriptionData) {
 
   if (error) throw new Error(`Failed to cancel subscription: ${error.message}`)
 
-  console.log('Subscription cancelled:', subscriptionId)
+  logger.info(`Subscription cancelled: ${subscriptionId}`)
 }
 
 async function handleSubscriptionResumed(data: LemonSqueezySubscriptionData) {
@@ -139,10 +140,10 @@ async function handleSubscriptionResumed(data: LemonSqueezySubscriptionData) {
 
   if (error) throw new Error(`Failed to resume subscription: ${error.message}`)
 
-  console.log('Subscription resumed:', subscriptionId)
+  logger.info(`Subscription resumed: ${subscriptionId}`)
 }
 
 async function handlePaymentFailed(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
-  console.warn('Payment failed:', subscriptionId)
+  logger.warn(`Payment failed: ${subscriptionId}`)
 }

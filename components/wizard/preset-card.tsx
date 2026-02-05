@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { Lock, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,11 +15,14 @@ interface PresetCardProps {
   onClick: () => void
 }
 
-export function PresetCard({ preset, isSelected, isLocked, isRecommended, onClick }: PresetCardProps) {
+export const PresetCard = memo(function PresetCard({ preset, isSelected, isLocked, isRecommended, onClick }: PresetCardProps) {
   return (
     <button
       type="button"
       onClick={isLocked ? undefined : onClick}
+      aria-label={`${preset.name} 스타일 프리셋${isLocked ? ' (Pro 전용)' : ''}${isRecommended ? ' (추천)' : ''}`}
+      aria-pressed={isSelected}
+      aria-disabled={isLocked}
       className={cn('text-left w-full', isLocked && 'cursor-not-allowed')}
       disabled={isLocked}
     >
@@ -44,12 +48,12 @@ export function PresetCard({ preset, isSelected, isLocked, isRecommended, onClic
             <div className="flex gap-1">
               {isRecommended && (
                 <Badge variant="warning" className="text-[10px] px-1.5 py-0">
-                  <Star className="mr-0.5 h-3 w-3" /> Rec
+                  <Star className="mr-0.5 h-3 w-3" aria-hidden="true" /> Rec
                 </Badge>
               )}
               {isLocked && (
                 <Badge variant="pro" className="text-[10px] px-1.5 py-0">
-                  <Lock className="mr-0.5 h-3 w-3" /> PRO
+                  <Lock className="mr-0.5 h-3 w-3" aria-hidden="true" /> PRO
                 </Badge>
               )}
             </div>
@@ -58,4 +62,4 @@ export function PresetCard({ preset, isSelected, isLocked, isRecommended, onClic
       </Card>
     </button>
   )
-}
+})
