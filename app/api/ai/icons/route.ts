@@ -1,8 +1,16 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { generateIcon } from '@/lib/ai/fal'
 import { checkUsage, incrementUsage } from '@/lib/utils/rate-limit'
+import {
+  handleApiError,
+  UnauthorizedError,
+  ValidationError,
+  UsageLimitError,
+  PlanRequiredError,
+  AIGenerationError,
+} from '@/lib/utils/errors'
+import type { Plan } from '@/types/database'
 
 export async function POST(request: Request) {
   try {
@@ -10,10 +18,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'UNAUTHORIZED', message: 'Authentication required' },
-        { status: 401 }
-      )
+      throw new UnauthorizedError()
     }
 
     const admin = getSupabaseAdmin()
@@ -23,34 +28,21 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
 
-    if ((userData as Record<string, unknown>)?.plan !== 'pro') {
-      return NextResponse.json(
-        { error: 'PLAN_REQUIRED', message: 'AI icon generation requires a Pro plan' },
-        { status: 403 }
-      )
+    const userPlan = (userData as { plan: Plan } | null)?.plan
+    if (userPlan !== 'pro') {
+      throw new PlanRequiredError('AI 아이콘 생성')
     }
 
     const usage = await checkUsage(admin, user.id, 'ai_icons_used_this_month')
 
     if (!usage.allowed) {
-      return NextResponse.json(
-        {
-          error: 'USAGE_LIMIT_EXCEEDED',
-          message: 'AI icon usage limit exceeded',
-          current: usage.current,
-          limit: usage.limit,
-        },
-        { status: 429 }
-      )
+      throw new UsageLimitError('AI 아이콘', usage.limit)
     }
 
     const body = await request.json()
 
     if (!body.description?.trim()) {
-      return NextResponse.json(
-        { error: 'INVALID_INPUT', message: 'Icon description is required' },
-        { status: 400 }
-      )
+      throw new ValidationError('아이콘 설명이 필요합니다.')
     }
 
     const images = await generateIcon({
@@ -60,12 +52,16 @@ export async function POST(request: Request) {
 
     await incrementUsage(admin, user.id, 'ai_icons_used_this_month')
 
-    return NextResponse.json({ images })
+    return Response.json({ images })
   } catch (error) {
-    console.error('AI icon generation failed:', error)
-    return NextResponse.json(
-      { error: 'AI_GENERATION_FAILED', message: 'Failed to generate icons' },
-      { status: 500 }
-    )
+    if (error instanceof UnauthorizedError ||
+        error instanceof ValidationError ||
+        error instanceof UsageLimitError ||
+        error instanceof PlanRequiredError ||
+        error instanceof AIGenerationError) {
+      return handleApiError(error)
+    }
+    // AI 생성 중 발생한 기타 에러
+    return handleApiError(new AIGenerationError('fal'))
   }
 }

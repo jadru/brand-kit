@@ -64,6 +64,48 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* -- Dark Mode -- */
+[data-theme="dark"] {
+  --color-brand: #fafafa;
+  --color-brand-foreground: #0a0a0b;
+
+  --color-surface: #0a0a0b;
+  --color-surface-secondary: #18181b;
+  --color-surface-tertiary: #27272a;
+
+  --color-border: #3f3f46;
+  --color-border-hover: #52525b;
+
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 4px 6px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 8px 16px rgb(0 0 0 / 0.4), 0 16px 48px rgb(0 0 0 / 0.5);
+  --shadow-glow: 0 0 20px rgb(99 102 241 / 0.25), 0 0 60px rgb(99 102 241 / 0.15);
+}
+
+/* 시스템 설정 기반 자동 다크모드 (선택적) */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --color-brand: #fafafa;
+    --color-brand-foreground: #0a0a0b;
+
+    --color-surface: #0a0a0b;
+    --color-surface-secondary: #18181b;
+    --color-surface-tertiary: #27272a;
+
+    --color-border: #3f3f46;
+    --color-border-hover: #52525b;
+
+    --color-text-primary: #fafafa;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #71717a;
+  }
+}
+
 /* -- Noise Texture Overlay -- */
 .noise::before {
   content: '';

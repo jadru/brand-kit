@@ -1,6 +1,11 @@
 import crypto from 'crypto'
 import { LEMONSQUEEZY_CONFIG } from '@/lib/lemonsqueezy/config'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import type {
+  LemonSqueezyWebhookPayload,
+  LemonSqueezySubscriptionData,
+  LemonSqueezyEventName,
+} from '@/types/lemonsqueezy'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -17,9 +22,9 @@ export async function POST(request: Request) {
     return new Response('Invalid signature', { status: 401 })
   }
 
-  const event = JSON.parse(body)
-  const eventName: string = event.meta.event_name
-  const data = event.data
+  const event = JSON.parse(body) as LemonSqueezyWebhookPayload
+  const eventName: LemonSqueezyEventName = event.meta.event_name
+  const data: LemonSqueezySubscriptionData = event.data
 
   console.log('LemonSqueezy Webhook:', eventName, data.id)
 
@@ -52,8 +57,7 @@ export async function POST(request: Request) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionCreated(data: any) {
+async function handleSubscriptionCreated(data: LemonSqueezySubscriptionData) {
   const userId = data.attributes.custom_data?.user_id
   if (!userId) throw new Error('Missing user_id in custom_data')
 
@@ -87,10 +91,9 @@ async function handleSubscriptionCreated(data: any) {
   console.log('Subscription created:', userId, subscriptionId)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionUpdated(data: any) {
+async function handleSubscriptionUpdated(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
-  const status: string = data.attributes.status
+  const status = data.attributes.status
 
   const supabaseAdmin = getSupabaseAdmin()
 
@@ -111,8 +114,7 @@ async function handleSubscriptionUpdated(data: any) {
   console.log('Subscription updated:', subscriptionId, status)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionCancelled(data: any) {
+async function handleSubscriptionCancelled(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
 
   const supabaseAdmin = getSupabaseAdmin()
@@ -126,8 +128,7 @@ async function handleSubscriptionCancelled(data: any) {
   console.log('Subscription cancelled:', subscriptionId)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionResumed(data: any) {
+async function handleSubscriptionResumed(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
 
   const supabaseAdmin = getSupabaseAdmin()
@@ -141,8 +142,7 @@ async function handleSubscriptionResumed(data: any) {
   console.log('Subscription resumed:', subscriptionId)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handlePaymentFailed(data: any) {
+async function handlePaymentFailed(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
   console.warn('Payment failed:', subscriptionId)
 }

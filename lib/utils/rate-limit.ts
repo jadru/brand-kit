@@ -1,5 +1,5 @@
-import { SupabaseClient } from '@supabase/supabase-js'
-import { PLAN_LIMITS, type Plan } from '@/types/database'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { PLAN_LIMITS, type Plan, type User } from '@/types/database'
 
 export type UsageField =
   | 'projects_used_this_month'
@@ -26,17 +26,18 @@ export async function checkUsage(
 ): Promise<CheckUsageResult> {
   await supabase.rpc('reset_monthly_usage')
 
-  const { data: user } = await supabase
+  const { data: user, error } = await supabase
     .from('users')
-    .select('*')
+    .select('plan, projects_used_this_month, ai_headlines_used_this_month, ai_icons_used_this_month')
     .eq('id', userId)
     .single()
 
-  if (!user) throw new Error('User not found')
+  if (error || !user) throw new Error('User not found')
 
-  const row = user as Record<string, unknown>
-  const plan = row.plan as Plan
-  const current = (row[field] as number) ?? 0
+  // 타입 안전한 접근을 위해 명시적으로 필드 추출
+  const userData = user as Pick<User, 'plan' | UsageField>
+  const plan = userData.plan
+  const current = userData[field] ?? 0
   const limitKey = FIELD_TO_LIMIT_KEY[field]
   const limit = PLAN_LIMITS[plan][limitKey] as number
 
