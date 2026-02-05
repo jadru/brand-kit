@@ -16,6 +16,13 @@ interface PipelineInput {
   userId: string
 }
 
+/**
+ * 에셋 생성 파이프라인
+ *
+ * 최적화 전략:
+ * - 경량 작업 (PWA manifest, code snippets): 병렬 실행
+ * - 이미지 생성 작업 (favicons, OG images, app icons): 메모리 관리를 위해 순차 실행
+ */
 export async function runAssetPipeline(input: PipelineInput) {
   const { project, brandProfile, stylePreset, userId } = input
   const iconSource = await resolveIconSource(project)
@@ -29,29 +36,59 @@ export async function runAssetPipeline(input: PipelineInput) {
     codeSnippets: null as Record<string, Buffer> | null,
   }
 
-  // Sequential to manage memory
-  if (project.platform === 'web' || project.platform === 'all') {
-    results.favicons = await generateFavicons({ iconSource, project, stylePreset })
-    results.ogImages = await generateOgImages({ project, brandProfile, stylePreset })
-    results.pwaManifest = await generatePWAManifest({ project })
+  const isWeb = project.platform === 'web' || project.platform === 'all'
+  const isMobile = project.platform === 'mobile' || project.platform === 'all'
+
+  // Phase 1: 경량 작업 병렬 실행 (메모리 사용량 적음)
+  const lightweightTasks: Promise<void>[] = []
+
+  if (isWeb) {
+    lightweightTasks.push(
+      generatePWAManifest({ project }).then((r) => {
+        results.pwaManifest = r
+      })
+    )
   }
 
-  if (project.platform === 'mobile' || project.platform === 'all') {
-    results.appIcons = await generateAppIcons({
-      iconSource, project, stylePreset,
-      mobileTarget: project.mobile_target,
+  lightweightTasks.push(
+    generateCodeSnippets({ project }).then((r) => {
+      results.codeSnippets = r
     })
-    results.splashScreens = await generateSplashScreens({
-      iconSource, project, stylePreset,
-      mobileTarget: project.mobile_target,
-    })
-  }
+  )
 
-  results.codeSnippets = await generateCodeSnippets({ project })
+  // Phase 2: 이미지 생성 작업 순차 실행 (메모리 관리)
+  // 경량 작업과 병렬로 시작하되, 이미지 작업끼리는 순차 실행
+  const imageTask = (async () => {
+    if (isWeb) {
+      results.favicons = await generateFavicons({ iconSource, project, stylePreset })
+      results.ogImages = await generateOgImages({ project, brandProfile, stylePreset })
+    }
+
+    if (isMobile) {
+      results.appIcons = await generateAppIcons({
+        iconSource,
+        project,
+        stylePreset,
+        mobileTarget: project.mobile_target,
+      })
+      results.splashScreens = await generateSplashScreens({
+        iconSource,
+        project,
+        stylePreset,
+        mobileTarget: project.mobile_target,
+      })
+    }
+  })()
+
+  // 모든 작업 완료 대기
+  await Promise.all([...lightweightTasks, imageTask])
 
   const zipBuffer = await createZip({ project, results })
   const storageUrl = await uploadToStorage({
-    userId, projectId: project.id, buffer: zipBuffer, filename: 'assets.zip',
+    userId,
+    projectId: project.id,
+    buffer: zipBuffer,
+    filename: 'assets.zip',
   })
 
   return { storageUrl, results }

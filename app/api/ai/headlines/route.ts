@@ -1,8 +1,14 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { generateHeadlines } from '@/lib/ai/claude'
 import { checkUsage, incrementUsage } from '@/lib/utils/rate-limit'
+import {
+  handleApiError,
+  UnauthorizedError,
+  ValidationError,
+  UsageLimitError,
+  AIGenerationError,
+} from '@/lib/utils/errors'
 import type { HeadlineRequest } from '@/types/wizard'
 
 export async function POST(request: Request) {
@@ -11,34 +17,19 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'UNAUTHORIZED', message: 'Authentication required' },
-        { status: 401 }
-      )
+      throw new UnauthorizedError()
     }
 
     const body: HeadlineRequest = await request.json()
 
     if (!body.projectName?.trim()) {
-      return NextResponse.json(
-        { error: 'INVALID_INPUT', message: 'Project name is required' },
-        { status: 400 }
-      )
+      throw new ValidationError('프로젝트 이름이 필요합니다.')
     }
 
     const usage = await checkUsage(getSupabaseAdmin(), user.id, 'ai_headlines_used_this_month')
 
     if (!usage.allowed) {
-      return NextResponse.json(
-        {
-          error: 'USAGE_LIMIT_EXCEEDED',
-          message: 'AI headline usage limit exceeded',
-          current: usage.current,
-          limit: usage.limit,
-          plan: usage.plan,
-        },
-        { status: 429 }
-      )
+      throw new UsageLimitError('AI 헤드라인', usage.limit)
     }
 
     const result = await generateHeadlines({
@@ -51,12 +42,15 @@ export async function POST(request: Request) {
 
     await incrementUsage(getSupabaseAdmin(), user.id, 'ai_headlines_used_this_month')
 
-    return NextResponse.json(result)
+    return Response.json(result)
   } catch (error) {
-    console.error('AI headline generation failed:', error)
-    return NextResponse.json(
-      { error: 'AI_GENERATION_FAILED', message: 'Failed to generate headlines' },
-      { status: 500 }
-    )
+    if (error instanceof AIGenerationError ||
+        error instanceof UnauthorizedError ||
+        error instanceof ValidationError ||
+        error instanceof UsageLimitError) {
+      return handleApiError(error)
+    }
+    // AI 생성 중 발생한 기타 에러
+    return handleApiError(new AIGenerationError('claude'))
   }
 }

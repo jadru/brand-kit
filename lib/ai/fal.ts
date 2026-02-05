@@ -1,5 +1,8 @@
 import { fal } from '@fal-ai/client'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
+import { composeIconPrompt } from '@/lib/prompts'
+import type { IconPromptConfig } from '@/lib/prompts'
+import { AI_CONFIG } from '@/lib/config/ai'
 
 fal.config({
   credentials: process.env.FAL_KEY!,
@@ -17,27 +20,56 @@ interface BrandProfileInfo {
 interface GenerateIconParams {
   description: string
   brandProfile?: BrandProfileInfo
+  promptConfig?: IconPromptConfig
 }
 
+/**
+ * AI 아이콘 생성
+ * FAL AI의 Flux 모델을 사용하여 브랜드 스타일에 맞는 아이콘을 생성합니다.
+ */
 export async function generateIcon(params: GenerateIconParams) {
-  const prompt = buildPrompt(params)
+  const { description, brandProfile, promptConfig } = params
 
-  const result = await fal.subscribe('fal-ai/flux/schnell', {
+  let prompt: string
+
+  if (promptConfig) {
+    const brandColors = brandProfile
+      ? { primary: brandProfile.primaryColor }
+      : undefined
+
+    const composed = composeIconPrompt(promptConfig, brandColors)
+    prompt = `${description}, ${composed.userPrompt}`
+  } else {
+    // 기본 프롬프트 생성 (promptConfig 없는 경우)
+    prompt = buildDefaultPrompt(description, brandProfile)
+  }
+
+  const result = await fal.subscribe(AI_CONFIG.fal.model, {
     input: {
       prompt,
-      num_images: 4,
-      image_size: 'square_hd',
-      num_inference_steps: 4,
-      seed: Math.floor(Math.random() * 1000000),
+      num_images: AI_CONFIG.fal.numImages,
+      image_size: AI_CONFIG.fal.imageSize,
+      num_inference_steps: AI_CONFIG.fal.numInferenceSteps,
+      seed: Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue),
     },
   })
 
   return result.data.images.map((img) => ({ url: img.url, seed: 0 }))
 }
 
-function buildPrompt(params: GenerateIconParams): string {
-  const { description, brandProfile } = params
+/**
+ * @deprecated generateIcon을 대신 사용하세요
+ */
+export const generateIconWithPromptConfig = generateIcon
 
+// ========================================
+// Internal Helpers
+// ========================================
+
+function buildDefaultPrompt(
+  description: string,
+  brandProfile?: BrandProfileInfo
+): string {
   const parts = [
     description,
     brandProfile ? getStyleModifier(brandProfile.styleDirection) : '',

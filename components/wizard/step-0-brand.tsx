@@ -9,9 +9,9 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ProfileForm } from '@/components/brand-profile/profile-form'
 import { PlanGate } from '@/components/shared/plan-gate'
 import { cn } from '@/lib/utils/cn'
-import type { BrandProfile, Plan } from '@/types/database'
+import { PLAN_LIMITS, type BrandProfile, type Plan } from '@/types/database'
 import type { BrandProfileFormValues } from '@/lib/validations/brand-profile'
-import { createBrandProfile } from '@/app/(dashboard)/brand-profiles/actions'
+import { createBrandProfile } from '@/app/[locale]/(dashboard)/brand-profiles/actions'
 
 interface Step0BrandProps {
   profiles: BrandProfile[]
@@ -24,7 +24,8 @@ export function Step0Brand({ profiles, plan }: Step0BrandProps) {
   const [localProfiles, setLocalProfiles] = useState(profiles)
   const [isCreating, setIsCreating] = useState(false)
 
-  const canCreateMore = plan === 'pro' || localProfiles.length < 1
+  const profileLimit = PLAN_LIMITS[plan].brand_profiles
+  const canCreateMore = localProfiles.length < profileLimit
 
   function handleSelectProfile(id: string) {
     setBrand({ brandProfileId: id, skipBrandProfile: false })
@@ -68,6 +69,8 @@ export function Step0Brand({ profiles, plan }: Step0BrandProps) {
             key={profile.id}
             type="button"
             onClick={() => handleSelectProfile(profile.id)}
+            aria-label={`${profile.name} 브랜드 프로필 선택`}
+            aria-pressed={brand.brandProfileId === profile.id}
             className="text-left"
           >
             <Card className={cn(
@@ -93,20 +96,20 @@ export function Step0Brand({ profiles, plan }: Step0BrandProps) {
         ))}
 
         {canCreateMore ? (
-          <button type="button" onClick={() => setShowCreateForm(true)} className="text-left">
+          <button type="button" onClick={() => setShowCreateForm(true)} aria-label="새 브랜드 프로필 생성" className="text-left">
             <Card className="border-dashed transition-all hover:border-brand">
               <CardContent className="flex items-center justify-center gap-2 pt-4">
-                <Plus className="h-4 w-4 text-text-tertiary" />
+                <Plus className="h-4 w-4 text-text-tertiary" aria-hidden="true" />
                 <span className="text-sm text-text-secondary">New Brand</span>
               </CardContent>
             </Card>
           </button>
         ) : (
           <PlanGate feature="Additional brand profiles" currentPlan={plan} requiredPlan="pro">
-            <button type="button" onClick={() => setShowCreateForm(true)} className="text-left">
+            <button type="button" onClick={() => setShowCreateForm(true)} aria-label="새 브랜드 프로필 생성" className="text-left">
               <Card className="border-dashed transition-all hover:border-brand">
                 <CardContent className="flex items-center justify-center gap-2 pt-4">
-                  <Plus className="h-4 w-4 text-text-tertiary" />
+                  <Plus className="h-4 w-4 text-text-tertiary" aria-hidden="true" />
                   <span className="text-sm text-text-secondary">New Brand</span>
                 </CardContent>
               </Card>

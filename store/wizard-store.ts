@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { Platform, MobileTarget, IconType } from '@/types/database'
+import type { Platform, IconType } from '@/types/database'
 import type {
   WizardBrandData,
   WizardPlatformData,

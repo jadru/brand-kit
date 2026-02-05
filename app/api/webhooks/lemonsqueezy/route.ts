@@ -1,6 +1,12 @@
 import crypto from 'crypto'
 import { LEMONSQUEEZY_CONFIG } from '@/lib/lemonsqueezy/config'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logger } from '@/lib/utils/logger'
+import type {
+  LemonSqueezyWebhookPayload,
+  LemonSqueezySubscriptionData,
+  LemonSqueezyEventName,
+} from '@/types/lemonsqueezy'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -17,11 +23,11 @@ export async function POST(request: Request) {
     return new Response('Invalid signature', { status: 401 })
   }
 
-  const event = JSON.parse(body)
-  const eventName: string = event.meta.event_name
-  const data = event.data
+  const event = JSON.parse(body) as LemonSqueezyWebhookPayload
+  const eventName: LemonSqueezyEventName = event.meta.event_name
+  const data: LemonSqueezySubscriptionData = event.data
 
-  console.log('LemonSqueezy Webhook:', eventName, data.id)
+  logger.info(`LemonSqueezy Webhook: ${eventName}`, { id: data.id })
 
   try {
     switch (eventName) {
@@ -42,18 +48,17 @@ export async function POST(request: Request) {
         await handlePaymentFailed(data)
         break
       default:
-        console.log('Unhandled event:', eventName)
+        logger.info(`Unhandled webhook event: ${eventName}`)
     }
 
     return new Response('OK', { status: 200 })
   } catch (error) {
-    console.error('Webhook error:', error)
+    logger.error('Webhook processing error', error)
     return new Response('Internal error', { status: 500 })
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionCreated(data: any) {
+async function handleSubscriptionCreated(data: LemonSqueezySubscriptionData) {
   const userId = data.attributes.custom_data?.user_id
   if (!userId) throw new Error('Missing user_id in custom_data')
 
@@ -69,7 +74,7 @@ async function handleSubscriptionCreated(data: any) {
     .single()
 
   if (!user) {
-    console.warn(`User ${userId} not found, skipping subscription creation`)
+    logger.warn(`User ${userId} not found, skipping subscription creation`)
     return
   }
 
@@ -84,13 +89,12 @@ async function handleSubscriptionCreated(data: any) {
 
   if (error) throw new Error(`Failed to update user plan: ${error.message}`)
 
-  console.log('Subscription created:', userId, subscriptionId)
+  logger.info(`Subscription created: ${userId}`, { subscriptionId })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionUpdated(data: any) {
+async function handleSubscriptionUpdated(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
-  const status: string = data.attributes.status
+  const status = data.attributes.status
 
   const supabaseAdmin = getSupabaseAdmin()
 
@@ -108,11 +112,10 @@ async function handleSubscriptionUpdated(data: any) {
     if (error) throw new Error(`Failed to update subscription: ${error.message}`)
   }
 
-  console.log('Subscription updated:', subscriptionId, status)
+  logger.info(`Subscription updated: ${subscriptionId}`, { status })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionCancelled(data: any) {
+async function handleSubscriptionCancelled(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
 
   const supabaseAdmin = getSupabaseAdmin()
@@ -123,11 +126,10 @@ async function handleSubscriptionCancelled(data: any) {
 
   if (error) throw new Error(`Failed to cancel subscription: ${error.message}`)
 
-  console.log('Subscription cancelled:', subscriptionId)
+  logger.info(`Subscription cancelled: ${subscriptionId}`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleSubscriptionResumed(data: any) {
+async function handleSubscriptionResumed(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
 
   const supabaseAdmin = getSupabaseAdmin()
@@ -138,11 +140,10 @@ async function handleSubscriptionResumed(data: any) {
 
   if (error) throw new Error(`Failed to resume subscription: ${error.message}`)
 
-  console.log('Subscription resumed:', subscriptionId)
+  logger.info(`Subscription resumed: ${subscriptionId}`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handlePaymentFailed(data: any) {
+async function handlePaymentFailed(data: LemonSqueezySubscriptionData) {
   const subscriptionId = data.id.toString()
-  console.warn('Payment failed:', subscriptionId)
+  logger.warn(`Payment failed: ${subscriptionId}`)
 }

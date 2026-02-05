@@ -1,0 +1,440 @@
+{
+  "common": {
+    "brandName": "BrandKit",
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "or": "또는",
+    "unlimited": "무제한",
+    "mainNavigation": "메인 네비게이션"
+  },
+
+  "demo": {
+    "meta": {
+      "title": "BrandKit 데모 체험",
+      "description": "가입 없이 BrandKit을 체험해보세요. AI가 브랜드 에셋을 즉시 생성하는 과정을 확인하세요."
+    },
+    "demoBadge": "라이브 데모",
+    "signupCta": "무료 가입",
+    "title": "BrandKit 실제 작동 모습",
+    "description": "단일 브랜드 프로필에서 12종 이상의 브랜드 에셋이 생성되는 과정을 미리보기하세요. 가입 불필요.",
+    "sampleBrand": {
+      "name": "Acme SaaS",
+      "style": "스타일",
+      "tagline": "더 빠르게, 더 나은 소프트웨어를"
+    },
+    "colorPalette": "컬러 팔레트",
+    "keywords": "브랜드 키워드",
+    "ogPreview": "OG 이미지 미리보기",
+    "generatedAssets": "생성된 에셋",
+    "assetsDescription": "모든 에셋이 60초 이내에 생성됩니다",
+    "downloadTitle": "다운로드 준비 완료",
+    "downloadDescription": "무료 계정을 만들어 에셋을 다운로드하고 나만의 브랜드 프로필을 만들어보세요.",
+    "downloadCta": "모든 에셋 다운로드",
+    "freeNote": "무료 플랜: 월 3개 프로젝트 포함",
+    "modal": {
+      "title": "무료 계정 만들기",
+      "description": "가입하여 에셋을 다운로드하고 나만의 브랜드 프로필을 만들어보세요.",
+      "signupCta": "무료 가입하기",
+      "loginCta": "이미 계정이 있으신가요? 로그인",
+      "close": "나중에 하기"
+    }
+  },
+
+  "landing": {
+    "hero": {
+      "badge": "AI-POWERED BRAND ENGINE",
+      "headline": "브랜드 스타일 저장.",
+      "headlineSub": "에셋 자동 생성.",
+      "description": "Brand Profile에 컬러와 스타일을 저장하면, AI가 Favicon, OG Image, App Icon 등 모든 플랫폼의 에셋을 생성합니다.",
+      "ctaPrimary": "무료로 시작하기",
+      "ctaSecondary": "더 알아보기",
+      "trustNoCreditCard": "신용카드 불필요",
+      "trustFreePlan": "무료 플랜 영구 제공",
+      "stats": {
+        "users": "크리에이터",
+        "assetsGenerated": "생성된 에셋",
+        "assetTypes": "에셋 종류",
+        "generation": "생성 시간"
+      }
+    },
+    "features": {
+      "sectionLabel": "Features",
+      "headline": "브랜드 에셋 생성에 필요한",
+      "headlineSub": "모든 것을 하나로.",
+      "aiCopy": {
+        "title": "AI 기반 브랜드 카피",
+        "description": "SEO 최적화된 헤드라인, 태그라인, OG 설명을 AI가 자동 생성합니다. 브랜드 톤에 맞는 카피를 즉시 받아보세요."
+      },
+      "designSystem": {
+        "title": "일관된 디자인 시스템",
+        "description": "Brand Profile에 스타일을 저장하고 여러 프로젝트에 일관되게 적용하세요."
+      },
+      "platformAssets": {
+        "title": "플랫폼별 에셋 패키지",
+        "description": "Web, iOS, Android 각 플랫폼에 필요한 모든 에셋을 한 번에 생성합니다."
+      },
+      "developerFriendly": {
+        "title": "개발자 친화적",
+        "description": "주요 프레임워크에 맞는 코드 스니펫을 함께 제공합니다. 복사해서 바로 적용하세요."
+      },
+      "fastGeneration": {
+        "title": "빠른 생성 속도",
+        "description": "최대 1분 내로 모든 에셋과 ZIP 패키지를 생성합니다."
+      },
+      "secureStorage": {
+        "title": "안전한 저장소",
+        "description": "클라우드에 안전하게 저장되며 언제든 재다운로드할 수 있습니다."
+      }
+    },
+    "howItWorks": {
+      "sectionLabel": "How it works",
+      "headline": "4단계로 완성하는",
+      "headlineSub": "브랜드 에셋.",
+      "steps": {
+        "1": {
+          "title": "브랜드 스타일 저장",
+          "description": "Brand Profile에 컬러, 스타일 방향, 키워드를 저장하세요."
+        },
+        "2": {
+          "title": "플랫폼 선택",
+          "description": "Web, Mobile, 또는 All 중 필요한 플랫폼을 선택하세요."
+        },
+        "3": {
+          "title": "AI가 모든 에셋 생성",
+          "description": "AI가 브랜드에 맞는 카피를 작성하고 최적화된 이미지를 생성합니다."
+        },
+        "4": {
+          "title": "다운로드 & 적용",
+          "description": "ZIP 파일로 다운로드하고 코드 스니펫으로 즉시 적용하세요."
+        }
+      }
+    },
+    "pricing": {
+      "sectionLabel": "Pricing",
+      "headline": "심플한 가격,",
+      "headlineSub": "강력한 기능.",
+      "description": "무료로 시작하고, 필요할 때 Pro로 업그레이드하세요. 신용카드 불필요.",
+      "monthly": "월간",
+      "yearly": "연간",
+      "save": "절약",
+      "perMonth": "월",
+      "billedYearly": "연 ${total} 결제 (${savings} 절약)",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "interval": "영구 무료",
+        "description": "개인 프로젝트에 충분한 기본 기능",
+        "features": [
+          "월 3개 프로젝트",
+          "Brand Profile 2개",
+          "AI 헤드라인 월 10회",
+          "AI 아이콘 월 3회",
+          "Free 스타일 프리셋",
+          "기본 에셋 생성"
+        ],
+        "cta": "무료로 시작하기"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$12",
+        "interval": "월",
+        "description": "팀과 프로 사용자를 위한 무제한 기능",
+        "features": [
+          "무제한 프로젝트",
+          "Brand Profile 5개",
+          "AI 헤드라인 무제한",
+          "AI 아이콘 생성 월 50회",
+          "전체 스타일 프리셋",
+          "우선 지원"
+        ],
+        "cta": "Pro로 시작하기",
+        "badge": "Most popular"
+      }
+    },
+    "cta": {
+      "badge": "START BUILDING TODAY",
+      "headline": "지금 바로",
+      "headlineSub": "시작하세요.",
+      "description": "브랜드 에셋 생성에 드는 시간과 비용을 획기적으로 줄이세요. 무료 플랜으로 바로 시작할 수 있습니다.",
+      "button": "무료로 시작하기",
+      "noCreditCard": "NO CREDIT CARD REQUIRED"
+    },
+    "testimonials": {
+      "sectionLabel": "Testimonials",
+      "headline": "전 세계 크리에이터들의",
+      "headlineSub": "선택.",
+      "description": "BrandKit 사용자들의 생생한 후기를 확인하세요",
+      "items": {
+        "1": {
+          "content": "BrandKit 덕분에 몇 시간이 걸리던 작업이 60초로 줄었어요. 프로젝트마다 에셋 만드는 데 반나절씩 쓰던 게 거짓말 같아요.",
+          "author": "김태호",
+          "role": "인디 메이커"
+        },
+        "2": {
+          "content": "AI가 생성하는 헤드라인이 정말 좋아요. 매번 우리 브랜드 톤을 완벽하게 잡아냅니다.",
+          "author": "이서연",
+          "role": "스타트업 마케팅 리드"
+        },
+        "3": {
+          "content": "드디어 브랜드 일관성을 이해하는 툴을 찾았어요. 컬러 팔레트 관리가 딱 제가 필요했던 기능이에요.",
+          "author": "박민수",
+          "role": "프리랜서 디자이너"
+        },
+        "4": {
+          "content": "모든 클라이언트 프로젝트에 BrandKit을 쓰고 있어요. ROI가 엄청나요 - 첫 프로젝트에서 바로 본전을 뽑았죠.",
+          "author": "정아름",
+          "role": "에이전시 대표"
+        }
+      },
+      "trustBadge1": "SOC 2 준수",
+      "trustBadge2": "99.9% 가동률",
+      "trustBadge3": "빠른 지원"
+    },
+    "faq": {
+      "sectionLabel": "FAQ",
+      "headline": "자주 묻는",
+      "headlineSub": "질문.",
+      "description": "BrandKit에 대해 궁금한 모든 것",
+      "items": {
+        "1": {
+          "question": "BrandKit은 어떤 에셋을 생성하나요?",
+          "answer": "BrandKit은 OG 이미지, 파비콘, 앱 아이콘(iOS & Android), Apple Touch 아이콘, Twitter 카드 등 12종 이상의 브랜드 에셋을 생성합니다. 모든 에셋은 각 플랫폼에 최적화되어 하나의 ZIP 파일로 제공됩니다."
+        },
+        "2": {
+          "question": "생성된 에셋을 상업적으로 사용할 수 있나요?",
+          "answer": "네! BrandKit으로 생성된 모든 에셋은 상업적으로 자유롭게 사용 가능합니다. 사용 제한이 없으며, 제품, 클라이언트 프로젝트 등 어떤 상업적 용도로든 사용하실 수 있습니다."
+        },
+        "3": {
+          "question": "AI 헤드라인 생성은 어떻게 작동하나요?",
+          "answer": "AI가 브랜드 프로필(키워드, 스타일 방향, 업종 등)을 분석하여 브랜드 톤에 맞는 SEO 최적화된 헤드라인, 태그라인, 설명을 생성합니다."
+        },
+        "4": {
+          "question": "Free와 Pro 플랜의 차이점은 무엇인가요?",
+          "answer": "Free 플랜은 월 3개 프로젝트, 브랜드 프로필 2개, 기본 기능을 포함합니다. Pro는 무제한 프로젝트, 브랜드 프로필 5개, AI 아이콘 생성, 전체 스타일 프리셋, 우선 지원을 제공합니다."
+        },
+        "5": {
+          "question": "구독을 언제든 취소할 수 있나요?",
+          "answer": "네, 언제든지 구독을 취소할 수 있습니다. 결제 기간이 끝날 때까지 Pro 기능을 계속 사용하실 수 있으며, 별도의 절차 없이 취소됩니다."
+        },
+        "6": {
+          "question": "환불이 가능한가요?",
+          "answer": "네, 14일 환불 보장을 제공합니다. BrandKit Pro에 만족하지 않으시면 구매 후 14일 이내에 연락 주시면 전액 환불해 드립니다."
+        }
+      },
+      "contactTitle": "더 궁금한 점이 있으신가요?",
+      "contactDescription": "원하는 답변을 찾지 못하셨나요? 고객 지원팀에 문의해 주세요.",
+      "contactCta": "문의하기 →"
+    },
+    "footer": {
+      "description": "브랜드 스타일을 저장하고, AI가 모든 플랫폼의 에셋을 자동으로 생성합니다.",
+      "product": "Product",
+      "account": "Account",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "howItWorks": "How it works",
+      "dashboard": "Dashboard",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "All rights reserved.",
+      "status": "All systems operational"
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "로그인",
+      "subtitle": "계정에 로그인하여 계속하세요",
+      "email": "이메일",
+      "emailPlaceholder": "you@example.com",
+      "password": "비밀번호",
+      "passwordPlaceholder": "••••••••",
+      "submit": "로그인",
+      "noAccount": "계정이 없으신가요?",
+      "signupLink": "회원가입",
+      "branding": {
+        "headline": "브랜드 에셋을",
+        "headlineSub": "자동으로.",
+        "description": "Brand Profile에 스타일을 저장하면, AI가 모든 플랫폼의 에셋을 생성합니다.",
+        "stats": {
+          "assets": "ASSETS",
+          "speed": "SPEED"
+        }
+      }
+    },
+    "signup": {
+      "title": "계정 만들기",
+      "subtitle": "AI로 브랜드 에셋을 자동 생성하세요",
+      "email": "이메일",
+      "emailPlaceholder": "you@example.com",
+      "password": "비밀번호",
+      "passwordPlaceholder": "최소 6자 이상",
+      "confirmPassword": "비밀번호 확인",
+      "confirmPlaceholder": "비밀번호를 다시 입력하세요",
+      "submit": "이메일로 가입하기",
+      "hasAccount": "이미 계정이 있으신가요?",
+      "loginLink": "로그인",
+      "success": {
+        "title": "이메일을 확인하세요",
+        "description": "{email}로 확인 링크를 보냈습니다. 링크를 클릭하여 계정을 활성화하세요.",
+        "backToLogin": "로그인으로 돌아가기"
+      },
+      "branding": {
+        "headline": "브랜드의 모든 것,",
+        "headlineSub": "한 곳에서.",
+        "description": "무료로 시작하세요. Favicon, OG Image, App Icon까지 모든 에셋을 자동 생성합니다.",
+        "stats": {
+          "start": "START",
+          "perMonth": "PER MONTH"
+        }
+      }
+    },
+    "oauth": {
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "validation": {
+      "passwordsDoNotMatch": "비밀번호가 일치하지 않습니다.",
+      "passwordTooShort": "비밀번호는 최소 6자 이상이어야 합니다."
+    }
+  },
+
+  "dashboard": {
+    "nav": {
+      "dashboard": "대시보드",
+      "projects": "프로젝트",
+      "brandProfiles": "브랜드 프로필",
+      "settings": "설정"
+    },
+    "plan": {
+      "label": "플랜",
+      "free": "Free",
+      "pro": "Pro"
+    }
+  },
+
+  "settings": {
+    "title": "설정",
+    "subtitle": "계정과 구독을 관리하세요",
+    "account": {
+      "title": "계정",
+      "subtitle": "계정 정보",
+      "email": "이메일",
+      "userId": "사용자 ID"
+    },
+    "subscription": {
+      "title": "구독",
+      "subtitle": "현재 플랜과 사용 한도",
+      "unlimited": "모든 기능에 무제한 액세스",
+      "limited": "기본 기능과 사용 한도 적용",
+      "upgrade": "Pro로 업그레이드",
+      "projectsPerMonth": "월간 프로젝트",
+      "aiHeadlines": "AI 헤드라인",
+      "brandProfiles": "브랜드 프로필"
+    },
+    "security": {
+      "title": "보안",
+      "subtitle": "인증 및 보안 설정",
+      "signout": "로그아웃",
+      "signoutDesc": "이 기기에서 계정을 로그아웃합니다"
+    }
+  },
+
+  "projects": {
+    "title": "프로젝트",
+    "total": "개 프로젝트",
+    "newProject": "새 프로젝트",
+    "empty": {
+      "title": "프로젝트가 없습니다",
+      "description": "첫 번째 프로젝트를 만들어 시작하세요",
+      "cta": "첫 프로젝트 만들기"
+    },
+    "viewDetails": "상세 보기"
+  },
+
+  "brandProfiles": {
+    "title": "브랜드 프로필",
+    "profileCount": "{count}/{limit} 프로필",
+    "upgradeNotice": "Free 플랜은 1개 프로필만 허용됩니다. Pro로 업그레이드하면 최대 5개까지 사용 가능합니다.",
+    "empty": {
+      "title": "브랜드 프로필이 없습니다.",
+      "cta": "첫 프로필 만들기"
+    },
+    "toast": {
+      "created": "프로필이 생성되었습니다",
+      "updated": "프로필이 업데이트되었습니다",
+      "deleted": "프로필이 삭제되었습니다"
+    }
+  },
+
+  "error": {
+    "title": "문제가 발생했습니다",
+    "unknown": "알 수 없는 오류가 발생했습니다.",
+    "retry": "다시 시도",
+    "home": "홈으로"
+  },
+
+  "notFound": {
+    "title": "페이지를 찾을 수 없습니다",
+    "description": "요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.",
+    "home": "홈으로 돌아가기"
+  },
+
+  "validation": {
+    "required": "{field}은(는) 필수입니다",
+    "maxLength": "{max}자 이하여야 합니다",
+    "invalidEmail": "유효한 이메일 주소를 입력하세요",
+    "invalidColor": "유효한 HEX 색상을 입력하세요",
+    "selectStyle": "스타일 방향을 선택하세요",
+    "maxColors": "보조 색상은 최대 {max}개입니다"
+  },
+
+  "metadata": {
+    "title": {
+      "default": "BrandKit - AI 브랜드 에셋 생성기",
+      "template": "%s | BrandKit"
+    },
+    "description": "브랜드 스타일을 저장하고 모든 브랜드 에셋을 자동 생성하세요",
+    "keywords": "브랜드 에셋, 파비콘 생성기, OG 이미지, 앱 아이콘, 브랜드 아이덴티티, AI 카피라이팅",
+    "privacy": {
+      "title": "개인정보처리방침",
+      "description": "BrandKit이 개인정보를 수집, 사용, 보호하는 방법을 알아보세요"
+    },
+    "terms": {
+      "title": "이용약관",
+      "description": "BrandKit 서비스 이용 약관을 확인하세요"
+    },
+    "login": {
+      "title": "로그인",
+      "description": "BrandKit 계정에 로그인하여 브랜드 에셋을 관리하세요"
+    },
+    "signup": {
+      "title": "회원가입",
+      "description": "무료 BrandKit 계정을 만들고 AI로 브랜드 에셋을 생성하세요"
+    },
+    "dashboard": {
+      "title": "대시보드",
+      "description": "브랜드 에셋과 프로젝트를 관리하세요"
+    },
+    "projects": {
+      "title": "프로젝트",
+      "description": "브랜드 에셋 프로젝트를 확인하고 관리하세요"
+    },
+    "brandProfiles": {
+      "title": "브랜드 프로필",
+      "description": "브랜드 프로필과 스타일 설정을 관리하세요"
+    },
+    "settings": {
+      "title": "설정",
+      "description": "계정과 구독 설정을 관리하세요"
+    }
+  }
+}

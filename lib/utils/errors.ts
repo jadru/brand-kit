@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export class AppError extends Error {
   constructor(
     message: string,
@@ -70,8 +72,35 @@ export class AIGenerationError extends AppError {
   }
 }
 
+export class PaymentError extends AppError {
+  constructor(action: 'checkout' | 'portal' | 'webhook') {
+    const messages = {
+      checkout: '결제 페이지 생성에 실패했습니다.',
+      portal: '결제 관리 포털에 접근할 수 없습니다.',
+      webhook: '결제 웹훅 처리에 실패했습니다.',
+    }
+    super(
+      messages[action],
+      'PAYMENT_ERROR',
+      500,
+      `${messages[action]} 잠시 후 다시 시도해주세요.`
+    )
+  }
+}
+
+export class NoSubscriptionError extends AppError {
+  constructor() {
+    super(
+      '구독 정보를 찾을 수 없습니다.',
+      'NO_SUBSCRIPTION',
+      404,
+      '활성화된 구독이 없습니다. 먼저 Pro 플랜에 가입해주세요.'
+    )
+  }
+}
+
 export function handleApiError(error: unknown): Response {
-  console.error('API Error:', error)
+  logger.error('API Error', error)
 
   if (error instanceof AppError) {
     return Response.json(
@@ -108,7 +137,7 @@ export async function generateWithRetry<T>(
       return await fn()
     } catch (error) {
       lastError = error as Error
-      console.warn(`Attempt ${i + 1} failed:`, error)
+      logger.warn(`Retry attempt ${i + 1} failed`, error)
 
       if (i < maxRetries - 1) {
         await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)))

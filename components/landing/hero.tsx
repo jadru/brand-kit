@@ -1,7 +1,12 @@
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { ArrowRight } from 'lucide-react'
+import { LocaleSwitcher } from '@/components/ui/locale-switcher'
 
 export function Hero() {
+  const t = useTranslations('landing.hero')
+  const tc = useTranslations('common')
+
   return (
     <section className="relative min-h-screen overflow-hidden bg-brand text-brand-foreground">
       {/* Grid pattern overlay */}
@@ -15,22 +20,23 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         {/* Nav */}
-        <nav className="flex items-center justify-between pb-12 pt-6 lg:pt-8">
+        <nav className="flex items-center justify-between pb-12 pt-6 lg:pt-8" aria-label={tc('mainNavigation')}>
           <span className="font-display text-xl font-bold tracking-tight">
-            BrandKit
+            {tc('brandName')}
           </span>
           <div className="flex items-center gap-3">
+            <LocaleSwitcher variant="minimal" className="text-white/70 hover:text-white" />
             <Link
               href="/login"
               className="rounded-full px-4 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
-              Log in
+              {tc('login')}
             </Link>
             <Link
               href="/signup"
               className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/15"
             >
-              Sign up
+              {tc('signup')}
             </Link>
           </div>
         </nav>
@@ -41,61 +47,82 @@ export function Hero() {
           <div className="max-w-2xl pt-8 lg:pt-20">
             {/* Badge */}
             <div className="animate-fade-in-up mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm backdrop-blur-sm">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-light animate-pulse" />
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent-light animate-pulse-glow" />
               <span className="font-mono text-xs tracking-wider text-white/60">
-                AI-POWERED BRAND ENGINE
+                {t('badge')}
               </span>
             </div>
 
             {/* Headline */}
-            <h1 className="animate-fade-in-up delay-1 font-display text-5xl font-bold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl">
-              브랜드 스타일 저장.
+            <h1 className="animate-fade-in-up delay-1 font-display text-3xl font-bold leading-[0.95] tracking-headline sm:text-4xl md:text-5xl lg:text-6xl">
+              {t('headline')}
               <br />
-              <span className="text-white/40">에셋 자동 생성.</span>
+              <span className="text-white/40">{t('headlineSub')}</span>
             </h1>
 
             {/* Description */}
             <p className="animate-fade-in-up delay-2 mt-8 max-w-lg text-base leading-relaxed text-white/50 sm:text-lg">
-              Brand Profile에 컬러와 스타일을 저장하면, AI가 Favicon, OG Image,
-              App Icon 등 모든 플랫폼의 에셋을 생성합니다.
+              {t('description')}
             </p>
 
             {/* CTAs */}
             <div className="animate-fade-in-up delay-3 mt-10 flex flex-wrap items-center gap-4">
               <Link
                 href="/signup"
-                className="group inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-brand transition-all hover:shadow-lg"
+                className="btn-glow group inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-brand transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                data-analytics="hero_cta_primary"
               >
-                무료로 시작하기
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                {t('ctaPrimary')}
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="#features"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 px-8 text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:text-white"
+                className="link-underline inline-flex h-12 items-center justify-center rounded-full border border-white/15 px-8 text-sm font-medium text-white/70 transition-all hover:border-white/25 hover:text-white"
+                data-analytics="hero_cta_secondary"
               >
-                더 알아보기
+                {t('ctaSecondary')}
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="animate-fade-in-up delay-4 mt-16 flex gap-10 pb-16 sm:gap-12 lg:pb-0">
+            {/* Trust indicators */}
+            <div className="animate-fade-in-up delay-4 mt-6 flex items-center gap-4 text-xs text-white/40">
+              <div className="flex items-center gap-1.5">
+                <svg className="h-4 w-4 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+                <span>{t('trustNoCreditCard')}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <svg className="h-4 w-4 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+                <span>{t('trustFreePlan')}</span>
+              </div>
+            </div>
+
+            {/* Social Proof Stats */}
+            <div className="animate-fade-in-up delay-5 mt-12 flex flex-wrap gap-8 pb-16 sm:mt-16 sm:gap-12 lg:pb-0">
               <div>
-                <div className="font-display text-2xl font-bold">12+</div>
-                <div className="mt-1 font-mono text-[11px] tracking-wider text-white/40">ASSET TYPES</div>
+                <div className="font-display text-xl font-bold sm:text-2xl">2,500+</div>
+                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.users')}</div>
               </div>
               <div>
-                <div className="font-display text-2xl font-bold">&lt;60s</div>
-                <div className="mt-1 font-mono text-[11px] tracking-wider text-white/40">GENERATION</div>
+                <div className="font-display text-xl font-bold sm:text-2xl">15K+</div>
+                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.assetsGenerated')}</div>
               </div>
               <div>
-                <div className="font-display text-2xl font-bold">1-ZIP</div>
-                <div className="mt-1 font-mono text-[11px] tracking-wider text-white/40">DOWNLOAD</div>
+                <div className="font-display text-xl font-bold sm:text-2xl">12+</div>
+                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.assetTypes')}</div>
+              </div>
+              <div>
+                <div className="font-display text-xl font-bold sm:text-2xl">&lt;60s</div>
+                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.generation')}</div>
               </div>
             </div>
           </div>
 
-          {/* Right: Floating asset tiles */}
-          <div className="animate-slide-in-right delay-3 relative hidden lg:block">
+          {/* Right: Floating asset tiles - decorative */}
+          <div className="animate-slide-in-right delay-3 relative hidden lg:block" aria-hidden="true">
             <div className="relative h-[540px]">
               {/* OG Image tile */}
               <div className="animate-float absolute left-0 top-8 w-72 rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">

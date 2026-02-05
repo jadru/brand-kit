@@ -1,48 +1,49 @@
-import Link from 'next/link'
-
-const navigation = {
-  product: [
-    { name: 'Features', href: '#features' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'How it works', href: '#' },
-  ],
-  account: [
-    { name: 'Log in', href: '/login' },
-    { name: 'Sign up', href: '/signup' },
-    { name: 'Dashboard', href: '/dashboard' },
-  ],
-  legal: [
-    { name: 'Privacy', href: '#' },
-    { name: 'Terms', href: '#' },
-  ],
-}
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 
 export function Footer() {
+  const t = useTranslations('landing.footer')
+  const tc = useTranslations('common')
+
+  const navigation = {
+    product: [
+      { key: 'features', href: '#features' },
+      { key: 'pricing', href: '#pricing' },
+      { key: 'howItWorks', href: '#how-it-works' },
+    ],
+    account: [
+      { key: 'login', href: '/login', useCommon: true },
+      { key: 'signup', href: '/signup', useCommon: true },
+      { key: 'dashboard', href: '/dashboard' },
+    ],
+    legal: [
+      { key: 'privacy', href: '/privacy' },
+      { key: 'terms', href: '/terms' },
+    ],
+  }
+
   return (
-    <footer className="border-t border-border bg-surface-secondary px-6 py-16 lg:px-8">
+    <footer className="border-t border-border bg-surface-secondary px-6 py-16 lg:px-8" role="contentinfo">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <span className="font-display text-lg font-bold text-text-primary">BrandKit</span>
+            <span className="font-display text-lg font-bold text-text-primary">{tc('brandName')}</span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-text-secondary">
-              브랜드 스타일을 저장하고, AI가 모든 플랫폼의 에셋을 자동으로 생성합니다.
-            </p>
-            <p className="mt-4 font-mono text-xs text-text-tertiary">
-              Built with Next.js, Supabase & Claude
+              {t('description')}
             </p>
           </div>
 
           {/* Product */}
           <div>
             <h3 className="font-mono text-xs tracking-[0.15em] text-text-tertiary uppercase">
-              Product
+              {t('product')}
             </h3>
             <ul className="mt-4 space-y-3">
               {navigation.product.map((item) => (
-                <li key={item.name}>
+                <li key={item.key}>
                   <Link href={item.href} className="text-sm text-text-secondary transition-colors hover:text-text-primary">
-                    {item.name}
+                    {t(item.key)}
                   </Link>
                 </li>
               ))}
@@ -52,13 +53,13 @@ export function Footer() {
           {/* Account */}
           <div>
             <h3 className="font-mono text-xs tracking-[0.15em] text-text-tertiary uppercase">
-              Account
+              {t('account')}
             </h3>
             <ul className="mt-4 space-y-3">
               {navigation.account.map((item) => (
-                <li key={item.name}>
+                <li key={item.key}>
                   <Link href={item.href} className="text-sm text-text-secondary transition-colors hover:text-text-primary">
-                    {item.name}
+                    {item.useCommon ? tc(item.key) : t(item.key)}
                   </Link>
                 </li>
               ))}
@@ -68,13 +69,13 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h3 className="font-mono text-xs tracking-[0.15em] text-text-tertiary uppercase">
-              Legal
+              {t('legal')}
             </h3>
             <ul className="mt-4 space-y-3">
               {navigation.legal.map((item) => (
-                <li key={item.name}>
+                <li key={item.key}>
                   <Link href={item.href} className="text-sm text-text-secondary transition-colors hover:text-text-primary">
-                    {item.name}
+                    {t(item.key)}
                   </Link>
                 </li>
               ))}
@@ -85,11 +86,11 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
           <p className="font-mono text-xs text-text-tertiary">
-            &copy; {new Date().getFullYear()} BrandKit. All rights reserved.
+            &copy; {new Date().getFullYear()} {tc('brandName')}. {t('copyright')}
           </p>
-          <div className="flex items-center gap-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-success" />
-            <span className="font-mono text-xs text-text-tertiary">All systems operational</span>
+          <div className="flex items-center gap-1" aria-label={t('status')}>
+            <div className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
+            <span className="font-mono text-xs text-text-tertiary">{t('status')}</span>
           </div>
         </div>
       </div>

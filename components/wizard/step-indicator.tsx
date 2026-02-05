@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -9,7 +10,7 @@ interface StepIndicatorProps {
   onStepClick?: (step: number) => void
 }
 
-export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicatorProps) {
+export const StepIndicator = memo(function StepIndicator({ steps, currentStep, onStepClick }: StepIndicatorProps) {
   return (
     <nav aria-label="Wizard progress">
       {/* Desktop */}
@@ -71,4 +72,4 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
       </div>
     </nav>
   )
-}
+})

@@ -1,0 +1,60 @@
+{
+  "name": "charlotte",
+  "description": "Brand kit generator with AI",
+  "framework": "nextjs",
+  "packageManager": "yarn",
+  "setup": {
+    "steps": [
+      {
+        "name": "Install dependencies",
+        "command": "yarn install"
+      },
+      {
+        "name": "Copy environment file",
+        "command": "cp .env.example .env",
+        "condition": "!exists(.env)"
+      }
+    ],
+    "copy": [
+      "node_modules",
+      ".env"
+    ]
+  },
+  "scripts": {
+    "dev": "yarn dev",
+    "build": "yarn build",
+    "start": "yarn start",
+    "lint": "yarn lint"
+  },
+  "run": {
+    "dev": {
+      "command": "yarn dev",
+      "port": 3000,
+      "readyPattern": "Ready in"
+    }
+  },
+  "env": {
+    "file": ".env",
+    "template": ".env.example",
+    "required": [
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "ANTHROPIC_API_KEY",
+      "FAL_KEY"
+    ],
+    "optional": [
+      "LEMONSQUEEZY_API_KEY",
+      "LEMONSQUEEZY_STORE_ID",
+      "LEMONSQUEEZY_WEBHOOK_SECRET",
+      "LEMONSQUEEZY_PRO_VARIANT_ID",
+      "NEXT_PUBLIC_APP_URL"
+    ]
+  },
+  "ignore": [
+    "node_modules",
+    ".next",
+    ".env",
+    ".env.local"
+  ]
+}

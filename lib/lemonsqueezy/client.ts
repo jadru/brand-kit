@@ -7,6 +7,7 @@ import {
   cancelSubscription,
 } from '@lemonsqueezy/lemonsqueezy.js'
 import { LEMONSQUEEZY_CONFIG } from './config'
+import { logger } from '@/lib/utils/logger'
 
 let _initialized = false
 
@@ -14,7 +15,7 @@ function ensureSetup() {
   if (!_initialized) {
     lemonSqueezySetup({
       apiKey: LEMONSQUEEZY_CONFIG.apiKey,
-      onError: (error) => console.error('LemonSqueezy Error:', error),
+      onError: (error) => logger.error('LemonSqueezy Error', error),
     })
     _initialized = true
   }

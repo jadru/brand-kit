@@ -2,12 +2,23 @@ import { ImageResponse } from '@vercel/og'
 
 export const runtime = 'edge'
 
+const defaultContent = {
+  en: {
+    title: 'BrandKit - AI Brand Asset Generator',
+    description: 'Save your brand style and auto-generate all brand assets',
+  },
+  ko: {
+    title: 'BrandKit - AI 브랜드 에셋 생성기',
+    description: '브랜드 스타일을 저장하고 모든 브랜드 에셋을 자동 생성하세요',
+  },
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const title = searchParams.get('title') || 'BrandKit'
-  const description =
-    searchParams.get('description') ||
-    '나만의 브랜드 스타일 → 모든 에셋 자동 생성'
+  const locale = (searchParams.get('locale') as 'en' | 'ko') || 'ko'
+  const content = defaultContent[locale] || defaultContent.ko
+  const title = searchParams.get('title') || content.title
+  const description = searchParams.get('description') || content.description
 
   return new ImageResponse(
     (
