@@ -3,18 +3,21 @@ import pngToIco from 'png-to-ico'
 import { FAVICON_SIZES } from './constants'
 import { renderIconToBuffer, generateTextSVG, type IconSource } from '@/lib/utils/image'
 import { getContrastColor } from '@/lib/utils/colors'
-import type { Project, StylePreset } from '@/types/database'
+import { resolveIconStyles } from './style-resolver'
+import type { Project, StylePreset, BrandProfile } from '@/types/database'
 
 interface FaviconInput {
   iconSource: IconSource
   project: Project
+  brandProfile: BrandProfile | null
   stylePreset: StylePreset
 }
 
 export async function generateFavicons(input: FaviconInput) {
-  const { iconSource, project, stylePreset } = input
+  const { iconSource, project, brandProfile, stylePreset } = input
   const results: Record<string, Buffer> = {}
-  const color = project.primary_color_override || '#000000'
+  const color = project.primary_color_override || brandProfile?.primary_color || '#000000'
+  const resolved = resolveIconStyles(stylePreset, brandProfile, project)
 
   // SVG Favicon
   if (iconSource.type === 'text') {
@@ -22,7 +25,8 @@ export async function generateFavicons(input: FaviconInput) {
       iconSource.value!,
       color,
       getContrastColor(color),
-      stylePreset.corner_radius
+      stylePreset.corner_radius,
+      resolved,
     )
     results['favicon.svg'] = Buffer.from(svgString)
   } else if (iconSource.type === 'svg') {
@@ -30,7 +34,7 @@ export async function generateFavicons(input: FaviconInput) {
   }
 
   // PNG Favicons
-  const baseImage = await renderIconToBuffer(iconSource, 512, project, stylePreset)
+  const baseImage = await renderIconToBuffer(iconSource, 512, project, stylePreset, brandProfile)
 
   for (const size of FAVICON_SIZES.png) {
     const resized = await sharp(baseImage)

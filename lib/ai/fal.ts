@@ -21,6 +21,7 @@ interface GenerateIconParams {
   description: string
   brandProfile?: BrandProfileInfo
   promptConfig?: IconPromptConfig
+  styleModifier?: string
 }
 
 /**
@@ -28,7 +29,7 @@ interface GenerateIconParams {
  * FAL AI의 Flux 모델을 사용하여 브랜드 스타일에 맞는 아이콘을 생성합니다.
  */
 export async function generateIcon(params: GenerateIconParams) {
-  const { description, brandProfile, promptConfig } = params
+  const { description, brandProfile, promptConfig, styleModifier } = params
 
   let prompt: string
 
@@ -41,7 +42,7 @@ export async function generateIcon(params: GenerateIconParams) {
     prompt = `${description}, ${composed.userPrompt}`
   } else {
     // 기본 프롬프트 생성 (promptConfig 없는 경우)
-    prompt = buildDefaultPrompt(description, brandProfile)
+    prompt = buildDefaultPrompt(description, brandProfile, styleModifier)
   }
 
   const result = await fal.subscribe(AI_CONFIG.fal.model, {
@@ -68,10 +69,12 @@ export const generateIconWithPromptConfig = generateIcon
 
 function buildDefaultPrompt(
   description: string,
-  brandProfile?: BrandProfileInfo
+  brandProfile?: BrandProfileInfo,
+  styleModifier?: string,
 ): string {
   const parts = [
     description,
+    styleModifier || '',
     brandProfile ? getStyleModifier(brandProfile.styleDirection) : '',
     brandProfile?.keywords.join(', ') || '',
     'single centered icon',

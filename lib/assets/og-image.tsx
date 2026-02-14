@@ -1,11 +1,62 @@
 import satori from 'satori'
 import sharp from 'sharp'
-import { readFile } from 'fs/promises'
-import path from 'path'
 import { OG_IMAGE_SIZES } from './constants'
-import { getContrastColor } from '@/lib/utils/colors'
+import { resolveOgStyles, type ResolvedOgStyles } from './style-resolver'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
 import React from 'react'
+
+// ========================================
+// Font Loading
+// ========================================
+
+// Google Fonts CDN URLs for each font/weight combination
+const FONT_URLS: Record<string, Record<number, string>> = {
+  'Inter': {
+    400: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
+    500: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZhrib2Bg-4.ttf',
+    600: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuDyYMZhrib2Bg-4.ttf',
+    700: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
+  },
+  'Geist': {
+    700: 'https://fonts.gstatic.com/s/geist/v3/gyBhhwUxId8mMGZKNImSPbcZm7h9NNQ.ttf',
+  },
+  'Plus Jakarta Sans': {
+    700: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_KU7NShXUEKi4Rw.ttf',
+  },
+  'Nunito': {
+    800: 'https://fonts.gstatic.com/s/nunito/v26/XRXI3I6Li01BKofiOc5wtlZ2di8HDIkhdTQ3j6zbXWjgeg.ttf',
+  },
+}
+
+// Module-level cache to avoid re-fetching fonts within the same invocation
+const fontCache = new Map<string, Buffer>()
+
+async function loadFont(family: string, weight: number): Promise<Buffer> {
+  const key = `${family}-${weight}`
+  const cached = fontCache.get(key)
+  if (cached) return cached
+
+  const familyUrls = FONT_URLS[family]
+  const url = familyUrls?.[weight] || FONT_URLS['Inter']![700]!
+
+  const res = await fetch(url)
+  if (!res.ok) {
+    // Fallback to Inter 700
+    const fallbackRes = await fetch(FONT_URLS['Inter']![700]!)
+    if (!fallbackRes.ok) throw new Error(`Failed to load font: ${family} ${weight}`)
+    const buf = Buffer.from(await fallbackRes.arrayBuffer())
+    fontCache.set(key, buf)
+    return buf
+  }
+
+  const buf = Buffer.from(await res.arrayBuffer())
+  fontCache.set(key, buf)
+  return buf
+}
+
+// ========================================
+// Main Generator
+// ========================================
 
 interface OgImageInput {
   project: Project
@@ -14,31 +65,26 @@ interface OgImageInput {
 }
 
 export async function generateOgImages(input: OgImageInput) {
-  const { project, brandProfile } = input
+  const { project, brandProfile, stylePreset } = input
   const results: Record<string, Buffer> = {}
 
-  let fontData: Buffer
-  try {
-    fontData = await readFile(path.join(process.cwd(), 'public/fonts/Inter-Bold.ttf'))
-  } catch {
-    // Fallback: use a system-like default if font not available
-    fontData = Buffer.alloc(0)
-  }
+  const resolved = resolveOgStyles(stylePreset, brandProfile, project)
+  const fontData = await loadFont(resolved.fontFamily, resolved.fontWeight)
 
-  const fonts = fontData.length > 0
-    ? [{ name: 'Inter', data: fontData, weight: 700 as const, style: 'normal' as const }]
-    : []
+  const fonts = [
+    { name: resolved.fontFamily, data: fontData, weight: resolved.fontWeight as 100, style: 'normal' as const },
+  ]
 
   // OG Image (1200x630)
   const ogSvg = await satori(
-    renderOgTemplate(project, brandProfile),
+    renderOgTemplate(project, resolved),
     { width: OG_IMAGE_SIZES.og.width, height: OG_IMAGE_SIZES.og.height, fonts }
   )
   results['og.png'] = await sharp(Buffer.from(ogSvg)).png().toBuffer()
 
   // Twitter Card (1200x600)
   const twitterSvg = await satori(
-    renderOgTemplate(project, brandProfile),
+    renderOgTemplate(project, resolved),
     { width: OG_IMAGE_SIZES.twitter.width, height: OG_IMAGE_SIZES.twitter.height, fonts }
   )
   results['twitter-card.png'] = await sharp(Buffer.from(twitterSvg)).png().toBuffer()
@@ -46,12 +92,72 @@ export async function generateOgImages(input: OgImageInput) {
   return results
 }
 
-function renderOgTemplate(
-  project: Project,
-  brandProfile: BrandProfile | null,
-) {
-  const bgColor = project.primary_color_override || brandProfile?.primary_color || '#000000'
-  const textColor = getContrastColor(bgColor)
+// ========================================
+// Template Renderer (dispatch by layout)
+// ========================================
+
+function renderOgTemplate(project: Project, s: ResolvedOgStyles) {
+  switch (s.layout) {
+    case 'left-aligned':
+      return renderLeftAligned(project, s)
+    case 'centered-large-text':
+      return renderCenteredLargeText(project, s)
+    case 'grid-balanced':
+      return renderGridBalanced(project, s)
+    case 'centered':
+    default:
+      return renderCentered(project, s)
+  }
+}
+
+// ========================================
+// Layout: Centered (Airbnb 3D, Stripe Gradient, Glassmorphism, Duolingo)
+// ========================================
+
+function renderCentered(project: Project, s: ResolvedOgStyles) {
+  const subtitle = project.ai_headline || project.description || ''
+
+  const textContent = React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      padding: s.glassOverlay ? '48px 64px' : '0',
+      ...(s.glassOverlay ? {
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255,255,255,0.2)',
+      } : {}),
+      ...(s.hardShadow ? {
+        backgroundColor: s.background === s.textColor ? 'transparent' : undefined,
+        boxShadow: '6px 6px 0 rgba(0,0,0,0.2)',
+        borderRadius: '16px',
+        padding: '48px 64px',
+      } : {}),
+    },
+  },
+    React.createElement('div', {
+      style: {
+        fontSize: '56px',
+        fontWeight: s.fontWeight,
+        fontFamily: s.fontFamily,
+        color: s.textColor,
+        textAlign: 'center' as const,
+        lineHeight: 1.2,
+        marginBottom: subtitle ? '20px' : '0',
+      },
+    }, project.name),
+    subtitle ? React.createElement('div', {
+      style: {
+        fontSize: '28px',
+        fontFamily: s.fontFamily,
+        color: s.secondaryTextColor,
+        textAlign: 'center' as const,
+        lineHeight: 1.4,
+        maxWidth: '800px',
+      },
+    }, subtitle) : null,
+  )
 
   return React.createElement('div', {
     style: {
@@ -61,26 +167,199 @@ function renderOgTemplate(
       alignItems: 'center',
       width: '100%',
       height: '100%',
-      backgroundColor: bgColor,
+      background: s.background,
+      padding: '80px',
+    },
+  }, textContent)
+}
+
+// ========================================
+// Layout: Left-Aligned (Notion Minimal, Linear Dark)
+// ========================================
+
+function renderLeftAligned(project: Project, s: ResolvedOgStyles) {
+  const subtitle = project.ai_headline || project.description || ''
+
+  // Left text block
+  const textBlock = React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      justifyContent: 'center',
+      flex: 1,
+    },
+  },
+    React.createElement('div', {
+      style: {
+        fontSize: '52px',
+        fontWeight: s.fontWeight,
+        fontFamily: s.fontFamily,
+        color: s.textColor,
+        lineHeight: 1.2,
+        marginBottom: subtitle ? '16px' : '0',
+      },
+    }, project.name),
+    subtitle ? React.createElement('div', {
+      style: {
+        fontSize: '24px',
+        fontFamily: s.fontFamily,
+        color: s.secondaryTextColor,
+        lineHeight: 1.5,
+        maxWidth: '600px',
+      },
+    }, subtitle) : null,
+  )
+
+  // Right accent element
+  const accentElement = s.accentColor ? React.createElement('div', {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '120px',
+      height: '120px',
+      borderRadius: '24px',
+      backgroundColor: s.accentColor,
+      marginLeft: '60px',
+      flexShrink: 0,
+    },
+  },
+    React.createElement('div', {
+      style: {
+        fontSize: '48px',
+        fontWeight: 700,
+        color: '#FFFFFF',
+        fontFamily: s.fontFamily,
+      },
+    }, project.name.charAt(0).toUpperCase()),
+  ) : null
+
+  return React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'row' as const,
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+      background: s.background,
+      padding: '80px',
+    },
+  }, textBlock, accentElement)
+}
+
+// ========================================
+// Layout: Centered Large Text (Vercel Sharp)
+// ========================================
+
+function renderCenteredLargeText(project: Project, s: ResolvedOgStyles) {
+  return React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+      background: s.background,
       padding: '80px',
     },
   },
     React.createElement('div', {
       style: {
-        fontSize: '64px',
-        fontWeight: 700,
-        color: textColor,
+        fontSize: '96px',
+        fontWeight: s.fontWeight,
+        fontFamily: s.fontFamily,
+        color: s.textColor,
         textAlign: 'center' as const,
-        marginBottom: '24px',
+        lineHeight: 1.1,
+        letterSpacing: '-2px',
       },
     }, project.name),
+  )
+}
+
+// ========================================
+// Layout: Grid Balanced (Figma Clean)
+// ========================================
+
+function renderGridBalanced(project: Project, s: ResolvedOgStyles) {
+  const subtitle = project.ai_headline || project.description || ''
+
+  // Left: Text content
+  const leftColumn = React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      justifyContent: 'center',
+      flex: 1,
+      paddingRight: '40px',
+    },
+  },
     React.createElement('div', {
       style: {
-        fontSize: '32px',
-        color: textColor,
-        opacity: 0.9,
-        textAlign: 'center' as const,
+        fontSize: '48px',
+        fontWeight: s.fontWeight || 400,
+        fontFamily: s.fontFamily,
+        color: s.textColor,
+        lineHeight: 1.25,
+        marginBottom: subtitle ? '16px' : '0',
       },
-    }, project.ai_headline || project.description || '')
+    }, project.name),
+    subtitle ? React.createElement('div', {
+      style: {
+        fontSize: '22px',
+        fontFamily: s.fontFamily,
+        color: s.secondaryTextColor,
+        lineHeight: 1.5,
+      },
+    }, subtitle) : null,
   )
+
+  // Right: Decorative card stack
+  const rightColumn = React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '320px',
+      flexShrink: 0,
+      gap: '12px',
+    },
+  },
+    // Decorative cards
+    React.createElement('div', {
+      style: {
+        display: 'flex',
+        width: '200px',
+        height: '200px',
+        borderRadius: '20px',
+        backgroundColor: s.accentColor || '#E5E7EB',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+      },
+    },
+      React.createElement('div', {
+        style: {
+          fontSize: '72px',
+          fontWeight: 700,
+          color: '#FFFFFF',
+          fontFamily: s.fontFamily,
+        },
+      }, project.name.charAt(0).toUpperCase()),
+    ),
+  )
+
+  return React.createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'row' as const,
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+      background: s.background,
+      padding: '80px',
+    },
+  }, leftColumn, rightColumn)
 }
