@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, FolderOpen, ArrowRight, Sparkles } from 'lucide-react'
+import { Plus, ArrowRight, Sparkles } from 'lucide-react'
 import type { ProjectStatus } from '@/types/database'
 
 const STATUS_CONFIG: Record<ProjectStatus, { variant: 'default' | 'success' | 'warning' | 'error'; label: string }> = {

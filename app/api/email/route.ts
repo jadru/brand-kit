@@ -5,7 +5,7 @@
  * This route is protected by an internal API key
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email/client'
 import { WelcomeEmail, ProjectCompleteEmail } from '@/lib/email/templates'
 

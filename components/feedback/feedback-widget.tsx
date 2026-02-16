@@ -49,6 +49,17 @@ export function FeedbackWidget({
 
   const t = content[locale]
 
+  const handleClose = useCallback(() => {
+    setIsAnimating(false)
+    setTimeout(() => {
+      setIsOpen(false)
+      setSentiment(null)
+      setMessage('')
+      // Return focus to trigger button
+      triggerRef.current?.focus()
+    }, 300)
+  }, [])
+
   // Focus trap handler
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -82,7 +93,7 @@ export function FeedbackWidget({
         }
       }
     },
-    [isOpen]
+    [isOpen, handleClose]
   )
 
   // Add/remove keyboard listener
@@ -103,17 +114,6 @@ export function FeedbackWidget({
       })
     })
   }
-
-  const handleClose = useCallback(() => {
-    setIsAnimating(false)
-    setTimeout(() => {
-      setIsOpen(false)
-      setSentiment(null)
-      setMessage('')
-      // Return focus to trigger button
-      triggerRef.current?.focus()
-    }, 300)
-  }, [])
 
   const handleSubmit = () => {
     if (!sentiment || !message.trim()) return
