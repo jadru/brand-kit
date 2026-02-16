@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     const images = await generateIcon({
       description: body.description,
       brandProfile: body.brandProfile,
+      styleModifier: body.styleModifier,
     })
 
     await incrementUsage(admin, user.id, 'ai_icons_used_this_month')

@@ -66,8 +66,12 @@ body {
 
 /* -- Dark Mode -- */
 [data-theme="dark"] {
-  --color-brand: #fafafa;
-  --color-brand-foreground: #0a0a0b;
+  --color-brand: #111114;
+  --color-brand-foreground: #fafafa;
+
+  --color-accent: #818cf8;
+  --color-accent-light: #a5b4fc;
+  --color-accent-dark: #6366f1;
 
   --color-surface: #0a0a0b;
   --color-surface-secondary: #18181b;
@@ -84,14 +88,18 @@ body {
   --shadow-md: 0 2px 4px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 4px 6px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.4);
   --shadow-xl: 0 8px 16px rgb(0 0 0 / 0.4), 0 16px 48px rgb(0 0 0 / 0.5);
-  --shadow-glow: 0 0 20px rgb(99 102 241 / 0.25), 0 0 60px rgb(99 102 241 / 0.15);
+  --shadow-glow: 0 0 20px rgb(129 140 248 / 0.3), 0 0 60px rgb(129 140 248 / 0.15);
 }
 
 /* 시스템 설정 기반 자동 다크모드 (선택적) */
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) {
-    --color-brand: #fafafa;
-    --color-brand-foreground: #0a0a0b;
+    --color-brand: #111114;
+    --color-brand-foreground: #fafafa;
+
+    --color-accent: #818cf8;
+    --color-accent-light: #a5b4fc;
+    --color-accent-dark: #6366f1;
 
     --color-surface: #0a0a0b;
     --color-surface-secondary: #18181b;
@@ -205,7 +213,7 @@ body {
 
 /* -- Gradient Text -- */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-accent) 0%, #a78bfa 50%, var(--color-accent-light) 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #c4b5fd 50%, var(--color-accent-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

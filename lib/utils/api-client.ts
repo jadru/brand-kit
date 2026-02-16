@@ -60,7 +60,7 @@ export async function apiClient<T = unknown>(
     }
 
     return { data: data as T }
-  } catch (error) {
+  } catch {
     // 네트워크 에러
     return {
       error: {

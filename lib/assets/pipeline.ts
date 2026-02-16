@@ -60,7 +60,7 @@ export async function runAssetPipeline(input: PipelineInput) {
   // 경량 작업과 병렬로 시작하되, 이미지 작업끼리는 순차 실행
   const imageTask = (async () => {
     if (isWeb) {
-      results.favicons = await generateFavicons({ iconSource, project, stylePreset })
+      results.favicons = await generateFavicons({ iconSource, project, brandProfile, stylePreset })
       results.ogImages = await generateOgImages({ project, brandProfile, stylePreset })
     }
 
@@ -68,12 +68,14 @@ export async function runAssetPipeline(input: PipelineInput) {
       results.appIcons = await generateAppIcons({
         iconSource,
         project,
+        brandProfile,
         stylePreset,
         mobileTarget: project.mobile_target,
       })
       results.splashScreens = await generateSplashScreens({
         iconSource,
         project,
+        brandProfile,
         stylePreset,
         mobileTarget: project.mobile_target,
       })

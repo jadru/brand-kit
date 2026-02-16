@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Cookie, X, Shield, ChevronRight } from 'lucide-react'
+import { Cookie, Shield, ChevronRight } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 
 interface CookieConsentProps {

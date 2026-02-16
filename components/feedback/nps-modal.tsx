@@ -58,6 +58,16 @@ export function NPSModal({
 
   const t = content[locale]
 
+  const handleDismiss = useCallback(() => {
+    setIsAnimating(false)
+    setTimeout(() => {
+      setIsOpen(false)
+      // Restore focus to trigger element
+      triggerRef.current?.focus()
+    }, 300)
+    onDismiss?.()
+  }, [onDismiss])
+
   // Focus trap handler
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -91,7 +101,7 @@ export function NPSModal({
         }
       }
     },
-    [isOpen]
+    [isOpen, handleDismiss]
   )
 
   // Add/remove keyboard listener
@@ -146,16 +156,6 @@ export function NPSModal({
       }, 300)
     }, 2000)
   }
-
-  const handleDismiss = useCallback(() => {
-    setIsAnimating(false)
-    setTimeout(() => {
-      setIsOpen(false)
-      // Restore focus to trigger element
-      triggerRef.current?.focus()
-    }, 300)
-    onDismiss?.()
-  }, [onDismiss])
 
   const getScoreColor = (score: number, isSelected: boolean) => {
     if (!isSelected)
