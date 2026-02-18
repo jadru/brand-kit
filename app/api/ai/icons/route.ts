@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       description: body.description,
       brandProfile: body.brandProfile,
       styleModifier: body.styleModifier,
+      negativePrompt: body.negativePrompt,
     })
 
     await incrementUsage(admin, user.id, 'ai_icons_used_this_month')

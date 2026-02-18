@@ -53,6 +53,8 @@ export interface StylePreset {
   og_typography: string | null
   og_background: string | null
   ai_style_modifier: string | null
+  og_ai_style_modifier: string | null
+  icon_ai_negative_prompt: string | null
   preview_image_url: string | null
   sort_order: number
   created_at: string
@@ -191,6 +193,10 @@ export interface Database {
     Functions: {
       reset_monthly_usage: {
         Args: Record<string, never>
+        Returns: void
+      }
+      increment_usage: {
+        Args: { p_user_id: string; p_field_name: string }
         Returns: void
       }
     }

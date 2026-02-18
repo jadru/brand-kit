@@ -312,12 +312,18 @@
       "dashboard": "대시보드",
       "projects": "프로젝트",
       "brandProfiles": "브랜드 프로필",
-      "settings": "설정"
+      "settings": "설정",
+      "dashboardMenu": "대시보드 메뉴"
     },
     "plan": {
       "label": "플랜",
       "free": "Free",
-      "pro": "Pro"
+      "pro": "Pro",
+      "proActive": "Pro Plan 사용 중",
+      "unlimitedProjects": "무제한 프로젝트",
+      "freeProjectLimit": "월 {count}개 프로젝트",
+      "upgrade": "업그레이드",
+      "goToDashboard": "BrandKit - 대시보드로 이동"
     }
   },
 
@@ -350,14 +356,20 @@
 
   "projects": {
     "title": "프로젝트",
-    "total": "개 프로젝트",
+    "total": "총 {count}개 프로젝트",
     "newProject": "새 프로젝트",
     "empty": {
-      "title": "프로젝트가 없습니다",
-      "description": "첫 번째 프로젝트를 만들어 시작하세요",
-      "cta": "첫 프로젝트 만들기"
+      "title": "첫 프로젝트를 만들어보세요",
+      "description": "60초 안에 OG 이미지, 파비콘, 앱 아이콘 등 12종 이상의 브랜드 에셋을 자동 생성합니다.",
+      "cta": "새 프로젝트 만들기"
     },
-    "viewDetails": "상세 보기"
+    "viewDetails": "상세 보기",
+    "status": {
+      "draft": "초안",
+      "generating": "생성 중",
+      "completed": "완료",
+      "failed": "실패"
+    }
   },
 
   "brandProfiles": {
@@ -372,6 +384,44 @@
       "created": "프로필이 생성되었습니다",
       "updated": "프로필이 업데이트되었습니다",
       "deleted": "프로필이 삭제되었습니다"
+    }
+  },
+
+  "wizard": {
+    "iconAi": {
+      "description": "원하는 아이콘을 설명하면 AI가 4가지 옵션을 생성합니다.",
+      "label": "아이콘 설명",
+      "placeholder": "예: 할 일 앱을 위한 미니멀한 체크 아이콘",
+      "suggested": "추천:",
+      "generate": "4개 옵션 생성"
+    }
+  },
+
+  "planGate": {
+    "monthly": "월간",
+    "yearly": "연간",
+    "yearlyDiscount": "-17%",
+    "perMonth": "/월",
+    "billedYearly": "연 ${price} 결제 (${savings} 절약)",
+    "upgrade": "Pro로 업그레이드",
+    "processing": "처리 중...",
+    "trust": "언제든 취소 가능 • 환불 보장",
+    "benefits": {
+      "aiIcon": {
+        "unique": "브랜드에 맞는 유니크한 아이콘",
+        "fourOptions": "AI가 4개 옵션 자동 생성",
+        "commercial": "상업적 사용 가능"
+      },
+      "brandProfiles": {
+        "five": "최대 5개 브랜드 프로필",
+        "perProject": "프로젝트별 스타일 관리",
+        "allPresets": "모든 스타일 프리셋 사용"
+      },
+      "default": {
+        "unlimited": "무제한 프로젝트 생성",
+        "allPresets": "모든 스타일 프리셋 사용",
+        "priority": "우선 지원"
+      }
     }
   },
 

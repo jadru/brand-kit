@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import { getBaseUrl } from '@/lib/utils/url'
 
 export async function signIn({
   email,
@@ -28,7 +29,7 @@ export async function signIn({
 export async function signInWithOAuth(provider: 'google' | 'github') {
   const supabase = await createClient()
   const headerStore = await headers()
-  const origin = headerStore.get('origin') || 'http://localhost:3000'
+  const origin = headerStore.get('origin') || getBaseUrl()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,

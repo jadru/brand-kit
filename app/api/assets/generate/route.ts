@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       .eq('id', projectId)
 
     try {
-      const { storageUrl } = await runAssetPipeline({
+      const { storageUrl, warnings } = await runAssetPipeline({
         project,
         brandProfile,
         stylePreset,
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         .update({ status: 'completed', assets_zip_url: storageUrl })
         .eq('id', projectId)
 
-      return Response.json({ success: true, url: storageUrl })
+      return Response.json({ success: true, url: storageUrl, warnings })
     } catch (pipelineError) {
       // 파이프라인 실패 시 상태 업데이트
       await supabase

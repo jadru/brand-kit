@@ -2,6 +2,8 @@ import satori from 'satori'
 import sharp from 'sharp'
 import { OG_IMAGE_SIZES } from './constants'
 import { resolveOgStyles, type ResolvedOgStyles } from './style-resolver'
+import { generateOgBackground } from '@/lib/ai/fal'
+import { generateWithRetry } from '@/lib/utils/errors'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
 import React from 'react'
 
@@ -64,9 +66,15 @@ interface OgImageInput {
   stylePreset: StylePreset
 }
 
-export async function generateOgImages(input: OgImageInput) {
+interface OgImageResult {
+  files: Record<string, Buffer>
+  warnings: string[]
+}
+
+export async function generateOgImages(input: OgImageInput): Promise<OgImageResult> {
   const { project, brandProfile, stylePreset } = input
   const results: Record<string, Buffer> = {}
+  const warnings: string[] = []
 
   const resolved = resolveOgStyles(stylePreset, brandProfile, project)
   const fontData = await loadFont(resolved.fontFamily, resolved.fontWeight)
@@ -75,21 +83,76 @@ export async function generateOgImages(input: OgImageInput) {
     { name: resolved.fontFamily, data: fontData, weight: resolved.fontWeight as 100, style: 'normal' as const },
   ]
 
-  // OG Image (1200x630)
-  const ogSvg = await satori(
-    renderOgTemplate(project, resolved),
-    { width: OG_IMAGE_SIZES.og.width, height: OG_IMAGE_SIZES.og.height, fonts }
-  )
-  results['og.png'] = await sharp(Buffer.from(ogSvg)).png().toBuffer()
+  const ogWidth = OG_IMAGE_SIZES.og.width
+  const ogHeight = OG_IMAGE_SIZES.og.height
+  const twitterWidth = OG_IMAGE_SIZES.twitter.width
+  const twitterHeight = OG_IMAGE_SIZES.twitter.height
 
-  // Twitter Card (1200x600)
-  const twitterSvg = await satori(
-    renderOgTemplate(project, resolved),
-    { width: OG_IMAGE_SIZES.twitter.width, height: OG_IMAGE_SIZES.twitter.height, fonts }
-  )
-  results['twitter-card.png'] = await sharp(Buffer.from(twitterSvg)).png().toBuffer()
+  // AI 배경 생성 시도 (og_ai_style_modifier가 있는 경우)
+  const hasAiModifier = !!(stylePreset.og_ai_style_modifier || stylePreset.ai_style_modifier)
+  let aiBgBuffer: Buffer | null = null
 
-  return results
+  if (hasAiModifier) {
+    try {
+      aiBgBuffer = await generateWithRetry(
+        () => generateOgBackground({
+          project, brandProfile, stylePreset,
+          width: ogWidth, height: ogHeight,
+        }),
+        2,
+        1500
+      )
+    } catch (error) {
+      console.warn('AI OG background generation failed after retries, falling back to gradient:', error)
+      warnings.push('ai_bg_fallback')
+    }
+  }
+
+  if (aiBgBuffer) {
+    // 하이브리드 렌더링: AI 배경 + 텍스트 오버레이 합성
+    const textOverlayStyles = { ...resolved, background: 'transparent' }
+
+    // OG Image (1200x630)
+    const ogTextSvg = await satori(
+      renderOgTemplate(project, textOverlayStyles),
+      { width: ogWidth, height: ogHeight, fonts }
+    )
+    const ogTextPng = await sharp(Buffer.from(ogTextSvg)).png().toBuffer()
+    results['og.png'] = await sharp(aiBgBuffer)
+      .composite([{ input: ogTextPng }])
+      .png()
+      .toBuffer()
+
+    // Twitter Card (1200x600) — 같은 AI 배경을 리사이즈하여 재사용
+    const twitterBg = await sharp(aiBgBuffer)
+      .resize(twitterWidth, twitterHeight, { fit: 'cover' })
+      .png()
+      .toBuffer()
+    const twitterTextSvg = await satori(
+      renderOgTemplate(project, textOverlayStyles),
+      { width: twitterWidth, height: twitterHeight, fonts }
+    )
+    const twitterTextPng = await sharp(Buffer.from(twitterTextSvg)).png().toBuffer()
+    results['twitter-card.png'] = await sharp(twitterBg)
+      .composite([{ input: twitterTextPng }])
+      .png()
+      .toBuffer()
+  } else {
+    // 폴백: 기존 CSS 그라디언트 방식
+    const ogSvg = await satori(
+      renderOgTemplate(project, resolved),
+      { width: ogWidth, height: ogHeight, fonts }
+    )
+    results['og.png'] = await sharp(Buffer.from(ogSvg)).png().toBuffer()
+
+    const twitterSvg = await satori(
+      renderOgTemplate(project, resolved),
+      { width: twitterWidth, height: twitterHeight, fonts }
+    )
+    results['twitter-card.png'] = await sharp(Buffer.from(twitterSvg)).png().toBuffer()
+  }
+
+  return { files: results, warnings }
 }
 
 // ========================================

@@ -35,6 +35,7 @@ export async function runAssetPipeline(input: PipelineInput) {
     pwaManifest: null as Record<string, Buffer> | null,
     codeSnippets: null as Record<string, Buffer> | null,
   }
+  const warnings: string[] = []
 
   const isWeb = project.platform === 'web' || project.platform === 'all'
   const isMobile = project.platform === 'mobile' || project.platform === 'all'
@@ -61,7 +62,9 @@ export async function runAssetPipeline(input: PipelineInput) {
   const imageTask = (async () => {
     if (isWeb) {
       results.favicons = await generateFavicons({ iconSource, project, brandProfile, stylePreset })
-      results.ogImages = await generateOgImages({ project, brandProfile, stylePreset })
+      const ogResult = await generateOgImages({ project, brandProfile, stylePreset })
+      results.ogImages = ogResult.files
+      warnings.push(...ogResult.warnings)
     }
 
     if (isMobile) {
@@ -93,7 +96,7 @@ export async function runAssetPipeline(input: PipelineInput) {
     filename: 'assets.zip',
   })
 
-  return { storageUrl, results }
+  return { storageUrl, results, warnings }
 }
 
 async function resolveIconSource(project: Project): Promise<IconSource> {

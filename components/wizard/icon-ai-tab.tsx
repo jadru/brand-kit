@@ -3,14 +3,15 @@
 import { useMemo, useState } from 'react'
 import { Sparkles, Wand2 } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useWizardStore } from '@/store/wizard-store'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { PlanGate } from '@/components/shared/plan-gate'
 import { UsageMeter } from '@/components/shared/usage-meter'
 import { cn } from '@/lib/utils/cn'
 import type { BrandProfile, Plan, StylePreset, User } from '@/types/database'
+import { PLAN_LIMITS } from '@/types/database'
 
 interface IconAiTabProps {
   plan: Plan
@@ -61,6 +62,7 @@ function buildSuggestions(
 }
 
 export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabProps) {
+  const t = useTranslations('wizard.iconAi')
   const { icon, setIcon, project, platform } = useWizardStore()
   const [description, setDescription] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -80,16 +82,8 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
     [project.name, project.description, platform.platform, brandProfile, stylePreset],
   )
 
-  const iconsLimit = plan === 'pro' ? Infinity : 5
+  const iconsLimit = PLAN_LIMITS[plan].ai_icons_per_month
   const isExhausted = iconsUsed >= iconsLimit
-
-  if (plan === 'free') {
-    return (
-      <PlanGate feature="AI Icon Generation" currentPlan={plan} requiredPlan="pro">
-        <div />
-      </PlanGate>
-    )
-  }
 
   async function handleGenerate() {
     if (!description.trim()) return
@@ -104,6 +98,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
         body: JSON.stringify({
           description,
           styleModifier: stylePreset?.ai_style_modifier ?? undefined,
+          negativePrompt: stylePreset?.icon_ai_negative_prompt ?? undefined,
           brandProfile: brandProfile ? {
             styleDirection: brandProfile.style_direction,
             primaryColor: brandProfile.primary_color,
@@ -144,24 +139,24 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">
-          Describe the icon you want and AI will generate 4 options.
+          {t('description')}
         </p>
         <UsageMeter label="AI Icons" current={iconsUsed} limit={iconsLimit} showUpgrade />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="iconDescription">Icon Description</Label>
+        <Label htmlFor="iconDescription">{t('label')}</Label>
         <Input
           id="iconDescription"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g., minimalist checkmark icon for task app"
+          placeholder={t('placeholder')}
         />
         {suggestions.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1 text-xs text-text-tertiary">
               <Wand2 className="h-3 w-3" />
-              Suggested:
+              {t('suggested')}
             </span>
             {suggestions.map((s, i) => (
               <button
@@ -188,7 +183,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
         disabled={!description.trim() || isExhausted}
       >
         <Sparkles className="mr-2 h-4 w-4" />
-        Generate 4 Options
+        {t('generate')}
       </Button>
 
       {error && <p className="text-sm text-error">{error}</p>}

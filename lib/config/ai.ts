@@ -5,11 +5,17 @@
 
 export const AI_CONFIG = {
   fal: {
-    model: 'fal-ai/flux/schnell',
+    model: 'fal-ai/flux/dev',
     numImages: 4,
     imageSize: 'square_hd' as const,
-    numInferenceSteps: 4,
+    numInferenceSteps: 25,
     maxSeedValue: 1000000,
+  },
+  falOg: {
+    model: 'fal-ai/flux/dev',
+    numImages: 1,
+    imageSize: 'landscape_16_9' as const,
+    numInferenceSteps: 25,
   },
   claude: {
     model: 'claude-sonnet-4-20250514',
@@ -17,4 +23,4 @@ export const AI_CONFIG = {
   },
 } as const
 
-export type FalImageSize = typeof AI_CONFIG.fal.imageSize
+export type FalImageSize = typeof AI_CONFIG.fal.imageSize | typeof AI_CONFIG.falOg.imageSize
