@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from './admin'
+import { logger } from '@/lib/utils/logger'
 
 export async function uploadToStorage(params: {
   userId: string
@@ -8,6 +9,7 @@ export async function uploadToStorage(params: {
 }): Promise<string> {
   const { userId, projectId, buffer, filename } = params
   const storagePath = `${userId}/${projectId}/${filename}`
+
   const admin = getSupabaseAdmin()
 
   const { error } = await admin.storage
@@ -17,11 +19,17 @@ export async function uploadToStorage(params: {
       upsert: true,
     })
 
-  if (error) throw error
+  if (error) {
+    logger.error('asset.storage.upload_failed', {
+      storagePath,
+      error: error.message,
+    })
+    throw error
+  }
 
   const { data: urlData, error: urlError } = await admin.storage
     .from('project-assets')
-    .createSignedUrl(storagePath, 86400) // 24 hours
+    .createSignedUrl(storagePath, 86400)
 
   if (urlError || !urlData) {
     throw new Error(`Failed to create signed URL: ${urlError?.message || 'Unknown error'}`)

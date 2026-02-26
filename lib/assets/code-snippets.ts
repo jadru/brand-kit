@@ -1,30 +1,52 @@
 import type { Project } from '@/types/database'
 
+function escTsString(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+}
+
+function escXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function generateCodeSnippets(input: { project: Project }) {
   const { project } = input
   const snippets: Record<string, string> = {}
   const desc = project.ai_og_description || project.description || ''
+  const safeNameTs = escTsString(project.name)
+  const safeDescTs = escTsString(desc)
+  const safeTaglineTs = escTsString(project.ai_tagline || '')
+  const safeNameXml = escXml(project.name)
+  const safeDescXml = escXml(desc)
 
   snippets['nextjs-metadata.ts'] = [
     '// app/layout.tsx',
     "import type { Metadata } from 'next'",
     '',
     'export const metadata: Metadata = {',
-    `  title: '${project.name}',`,
-    `  description: '${desc}',`,
+    `  title: '${safeNameTs}',`,
+    `  description: '${safeDescTs}',`,
     '  icons: {',
     "    icon: '/favicon.svg',",
     "    apple: '/apple-touch-icon.png',",
     '  },',
     '  openGraph: {',
-    `    title: '${project.name}',`,
-    `    description: '${desc}',`,
+    `    title: '${safeNameTs}',`,
+    `    description: '${safeDescTs}',`,
     "    images: ['/og.png'],",
     '  },',
     '  twitter: {',
     "    card: 'summary_large_image',",
-    `    title: '${project.name}',`,
-    `    description: '${project.ai_tagline || ''}',`,
+    `    title: '${safeNameTs}',`,
+    `    description: '${safeTaglineTs}',`,
     "    images: ['/twitter-card.png'],",
     '  },',
     '}',
@@ -35,12 +57,12 @@ export async function generateCodeSnippets(input: { project: Project }) {
     '<head>',
     '  <meta charset="UTF-8" />',
     '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-    `  <title>${project.name}</title>`,
-    `  <meta name="description" content="${desc}" />`,
+    `  <title>${safeNameXml}</title>`,
+    `  <meta name="description" content="${safeDescXml}" />`,
     '  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />',
     '  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />',
-    `  <meta property="og:title" content="${project.name}" />`,
-    `  <meta property="og:description" content="${desc}" />`,
+    `  <meta property="og:title" content="${safeNameXml}" />`,
+    `  <meta property="og:description" content="${safeDescXml}" />`,
     '  <meta property="og:image" content="/og.png" />',
     '  <meta name="twitter:card" content="summary_large_image" />',
     '  <meta name="twitter:image" content="/twitter-card.png" />',
@@ -52,9 +74,9 @@ export async function generateCodeSnippets(input: { project: Project }) {
     snippets['ios-info.plist'] = [
       '<!-- ios/App/App/Info.plist -->',
       '<key>CFBundleDisplayName</key>',
-      `<string>${project.name}</string>`,
+      `<string>${safeNameXml}</string>`,
       '<key>CFBundleName</key>',
-      `<string>${project.name}</string>`,
+      `<string>${safeNameXml}</string>`,
     ].join('\n')
   }
 
@@ -62,7 +84,7 @@ export async function generateCodeSnippets(input: { project: Project }) {
     snippets['android-strings.xml'] = [
       '<!-- android/app/src/main/res/values/strings.xml -->',
       '<resources>',
-      `  <string name="app_name">${project.name}</string>`,
+      `  <string name="app_name">${safeNameXml}</string>`,
       '</resources>',
     ].join('\n')
   }
