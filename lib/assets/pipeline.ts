@@ -67,7 +67,7 @@ export async function runAssetPipeline(input: PipelineInput) {
   const imageTask = (async () => {
     if (isWeb) {
       const faviconsStart = Date.now()
-      results.favicons = await generateFavicons({ iconSource, project, stylePreset })
+      results.favicons = await generateFavicons({ iconSource, project, brandProfile, stylePreset })
       logger.debug('asset.pipeline.favicons.done', {
         durationMs: Date.now() - faviconsStart,
         files: Object.keys(results.favicons).length,
@@ -86,6 +86,7 @@ export async function runAssetPipeline(input: PipelineInput) {
       results.appIcons = await generateAppIcons({
         iconSource,
         project,
+        brandProfile,
         stylePreset,
         mobileTarget: project.mobile_target,
       })
@@ -98,6 +99,7 @@ export async function runAssetPipeline(input: PipelineInput) {
       results.splashScreens = await generateSplashScreens({
         iconSource,
         project,
+        brandProfile,
         stylePreset,
         mobileTarget: project.mobile_target,
       })

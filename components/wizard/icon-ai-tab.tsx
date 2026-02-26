@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Sparkles, Wand2 } from 'lucide-react'
 import Image from 'next/image'
 import { useWizardStore } from '@/store/wizard-store'
 import { Input } from '@/components/ui/input'
@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button'
 import { PlanGate } from '@/components/shared/plan-gate'
 import { UsageMeter } from '@/components/shared/usage-meter'
 import { cn } from '@/lib/utils/cn'
-import type { BrandProfile, Plan, User } from '@/types/database'
+import type { BrandProfile, Plan, StylePreset, User } from '@/types/database'
 
 interface IconAiTabProps {
   plan: Plan
   user: User
   brandProfile: BrandProfile | null
+  stylePreset: StylePreset | null
 }
 
 interface GeneratedImage {
@@ -23,14 +24,62 @@ interface GeneratedImage {
   seed: number
 }
 
-export function IconAiTab({ plan, user, brandProfile }: IconAiTabProps) {
-  const { icon, setIcon } = useWizardStore()
+function buildSuggestions(
+  projectName: string,
+  projectDescription: string,
+  platform: string,
+  brandProfile: BrandProfile | null,
+  stylePreset: StylePreset | null,
+): string[] {
+  const suggestions: string[] = []
+
+  if (stylePreset && projectName) {
+    suggestions.push(`${stylePreset.name}-style icon for ${projectName}`)
+  }
+
+  if (brandProfile?.keywords?.length) {
+    const keyword = brandProfile.keywords[0]
+    const iconStyle = stylePreset?.icon_style || brandProfile.icon_style
+    suggestions.push(`${keyword} themed ${iconStyle ? iconStyle + ' ' : ''}icon`)
+  }
+
+  if (projectName && projectDescription) {
+    suggestions.push(
+      `modern ${platform} app icon for ${projectName}, ${projectDescription}`,
+    )
+  }
+
+  if (projectName && !stylePreset) {
+    suggestions.push(`minimalist icon for ${projectName}`)
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push('minimalist app icon, clean and modern')
+  }
+
+  return suggestions
+}
+
+export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabProps) {
+  const { icon, setIcon, project, platform } = useWizardStore()
   const [description, setDescription] = useState('')
   const [quality, setQuality] = useState<'fast' | 'quality'>('fast')
   const [isGenerating, setIsGenerating] = useState(false)
   const [images, setImages] = useState<GeneratedImage[]>([])
   const [error, setError] = useState<string | null>(null)
   const [iconsUsed, setIconsUsed] = useState(user.ai_icons_used_this_month)
+
+  const suggestions = useMemo(
+    () =>
+      buildSuggestions(
+        project.name,
+        project.description,
+        platform.platform,
+        brandProfile,
+        stylePreset,
+      ),
+    [project.name, project.description, platform.platform, brandProfile, stylePreset],
+  )
 
   const iconsLimit = plan === 'pro' ? Infinity : 5
   const isExhausted = iconsUsed >= iconsLimit
@@ -55,6 +104,7 @@ export function IconAiTab({ plan, user, brandProfile }: IconAiTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description,
+          styleModifier: stylePreset?.ai_style_modifier ?? undefined,
           brandProfile: brandProfile ? {
             styleDirection: brandProfile.style_direction,
             primaryColor: brandProfile.primary_color,
@@ -118,6 +168,29 @@ export function IconAiTab({ plan, user, brandProfile }: IconAiTabProps) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="e.g., minimalist checkmark icon for task app"
         />
+        {suggestions.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1 text-xs text-text-tertiary">
+              <Wand2 className="h-3 w-3" />
+              Suggested:
+            </span>
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setDescription(s)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs transition-colors',
+                  description === s
+                    ? 'border-brand bg-brand/10 text-brand'
+                    : 'border-border text-text-secondary hover:border-border-hover hover:bg-surface-secondary',
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

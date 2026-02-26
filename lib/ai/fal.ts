@@ -29,6 +29,7 @@ interface GenerateIconParams {
   promptConfig?: IconPromptConfig
   seed?: number
   quality?: FalQualityTier
+  styleModifier?: string
 }
 
 const ICON_NEGATIVE_PROMPT =
@@ -40,7 +41,7 @@ const ICON_NEGATIVE_PROMPT =
  * FAL AI의 Flux 모델을 사용하여 브랜드 스타일에 맞는 아이콘을 생성합니다.
  */
 export async function generateIcon(params: GenerateIconParams) {
-  const { description, brandProfile, promptConfig } = params
+  const { description, brandProfile, promptConfig, styleModifier } = params
   const quality = params.quality ?? 'fast'
   const modelConfig = AI_CONFIG.fal.models[quality]
   const seed = params.seed ?? Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue)
@@ -60,7 +61,7 @@ export async function generateIcon(params: GenerateIconParams) {
     prompt = `${description}, ${composed.userPrompt}`
   } else {
     // 기본 프롬프트 생성 (promptConfig 없는 경우)
-    prompt = buildDefaultPrompt(description, brandProfile)
+    prompt = buildDefaultPrompt(description, brandProfile, styleModifier)
   }
 
   const falInput: Record<string, unknown> = {
@@ -94,10 +95,12 @@ export const generateIconWithPromptConfig = generateIcon
 
 function buildDefaultPrompt(
   description: string,
-  brandProfile?: BrandProfileInfo
+  brandProfile?: BrandProfileInfo,
+  styleModifier?: string,
 ): string {
   const parts = [
     description,
+    styleModifier || '',
     brandProfile ? getStyleModifier(brandProfile.styleDirection) : '',
     brandProfile?.keywords.join(', ') || '',
     'single centered icon',

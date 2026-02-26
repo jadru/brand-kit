@@ -55,6 +55,7 @@ describe('generateFavicons', () => {
     const results = await generateFavicons({
       iconSource: { type: 'text', value: 'BK' },
       project: createProject(),
+      brandProfile: null,
       stylePreset: createStylePreset(),
     })
 

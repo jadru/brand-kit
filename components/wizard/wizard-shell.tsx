@@ -123,8 +123,10 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
         return <Step2ProjectInfo user={user} brandProfile={selectedProfile} />
       case 3:
         return <Step3Style presets={stylePresets} brandProfile={selectedProfile} plan={plan} />
-      case 4:
-        return <Step4Icon plan={plan} user={user} brandProfile={selectedProfile} />
+      case 4: {
+        const selectedPreset = stylePresets.find((p) => p.id === store.style.stylePresetId) ?? null
+        return <Step4Icon plan={plan} user={user} brandProfile={selectedProfile} stylePreset={selectedPreset} />
+      }
       case 5:
         return (
           <Step5Preview

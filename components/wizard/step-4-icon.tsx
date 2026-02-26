@@ -5,15 +5,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { IconTextTab } from './icon-text-tab'
 import { IconSymbolTab } from './icon-symbol-tab'
 import { IconAiTab } from './icon-ai-tab'
-import type { BrandProfile, Plan, User } from '@/types/database'
+import type { BrandProfile, Plan, StylePreset, User } from '@/types/database'
 
 interface Step4IconProps {
   plan: Plan
   user: User
   brandProfile: BrandProfile | null
+  stylePreset: StylePreset | null
 }
 
-export function Step4Icon({ plan, user, brandProfile }: Step4IconProps) {
+export function Step4Icon({ plan, user, brandProfile, stylePreset }: Step4IconProps) {
   const [activeTab, setActiveTab] = useState('text')
 
   return (
@@ -38,7 +39,7 @@ export function Step4Icon({ plan, user, brandProfile }: Step4IconProps) {
           <IconSymbolTab />
         </TabsContent>
         <TabsContent value="ai">
-          <IconAiTab plan={plan} user={user} brandProfile={brandProfile} />
+          <IconAiTab plan={plan} user={user} brandProfile={brandProfile} stylePreset={stylePreset} />
         </TabsContent>
       </Tabs>
     </div>
