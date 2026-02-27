@@ -63,6 +63,7 @@ function buildSuggestions(
 export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabProps) {
   const { icon, setIcon, project, platform } = useWizardStore()
   const [description, setDescription] = useState('')
+  const [quality, setQuality] = useState<'fast' | 'quality'>('fast')
   const [isGenerating, setIsGenerating] = useState(false)
   const [images, setImages] = useState<GeneratedImage[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -91,7 +92,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
     )
   }
 
-  async function handleGenerate() {
+  async function generate(seed?: number) {
     if (!description.trim()) return
 
     setIsGenerating(true)
@@ -109,9 +110,11 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
             primaryColor: brandProfile.primary_color,
             colorMode: brandProfile.color_mode,
             iconStyle: brandProfile.icon_style,
-            cornerStyle: brandProfile.corner_style,
-            keywords: brandProfile.keywords,
-          } : undefined,
+          cornerStyle: brandProfile.corner_style,
+          keywords: brandProfile.keywords,
+        } : undefined,
+          seed,
+          quality,
         }),
       })
 
@@ -134,6 +137,14 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  async function handleGenerate() {
+    await generate()
+  }
+
+  async function handleRegenerateFromSeed(seed: number) {
+    await generate(seed)
   }
 
   function handleSelectImage(url: string) {
@@ -182,6 +193,19 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
         )}
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="iconQuality">Generation Quality</Label>
+        <select
+          id="iconQuality"
+          value={quality}
+          onChange={(e) => setQuality(e.target.value as 'fast' | 'quality')}
+          className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-text-primary"
+        >
+          <option value="fast">Fast (Flux Schnell)</option>
+          <option value="quality">High Quality (Flux Dev)</option>
+        </select>
+      </div>
+
       <Button
         onClick={handleGenerate}
         isLoading={isGenerating}
@@ -196,25 +220,41 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
       {images.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {images.map((img, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleSelectImage(img.url)}
-              className={cn(
-                'overflow-hidden rounded-lg border-2 transition-all',
-                icon.iconType === 'ai_generated' && icon.iconValue === img.url
-                  ? 'border-brand ring-2 ring-brand'
-                  : 'border-border hover:border-border-hover'
-              )}
-            >
-              <Image
-                src={img.url}
-                alt={`Generated icon option ${idx + 1}`}
-                width={256}
-                height={256}
-                className="h-full w-full object-cover"
-              />
-            </button>
+            <div key={idx} className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleSelectImage(img.url)}
+                className={cn(
+                  'overflow-hidden rounded-lg border-2 transition-all',
+                  icon.iconType === 'ai_generated' && icon.iconValue === img.url
+                    ? 'border-brand ring-2 ring-brand'
+                    : 'border-border hover:border-border-hover'
+                )}
+              >
+                <Image
+                  src={img.url}
+                  alt={`Generated icon option ${idx + 1}`}
+                  width={256}
+                  height={256}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">Seed {img.seed}</span>
+                {icon.iconType === 'ai_generated' && icon.iconValue === img.url && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRegenerateFromSeed(img.seed)}
+                    disabled={isGenerating || isExhausted}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Similar
+                  </Button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}

@@ -3,7 +3,7 @@ export const FAVICON_SIZES = {
   ico: [16, 32, 48] as const,
 }
 
-export const PWA_ICON_SIZES = [72, 96, 128, 144, 152, 192, 384, 512] as const
+export const PWA_ICON_SIZES = [192, 512] as const
 
 export const ANDROID_MIPMAP_SIZES: Record<string, number> = {
   mdpi: 48,
@@ -39,6 +39,8 @@ export const OG_IMAGE_SIZES = {
 export const SPLASH_SIZES = [
   { width: 1170, height: 2532, name: 'iphone-13-pro' },
   { width: 1284, height: 2778, name: 'iphone-13-pro-max' },
+  { width: 1179, height: 2556, name: 'iphone-15-pro' },
+  { width: 1290, height: 2796, name: 'iphone-15-pro-max' },
   { width: 1125, height: 2436, name: 'iphone-x' },
   { width: 828, height: 1792, name: 'iphone-xr' },
   { width: 1242, height: 2688, name: 'iphone-xs-max' },
@@ -48,6 +50,10 @@ export const SPLASH_SIZES = [
   { width: 2048, height: 2732, name: 'ipad-pro-12.9' },
   { width: 1668, height: 2388, name: 'ipad-pro-11' },
   { width: 1536, height: 2048, name: 'ipad-mini' },
+  { width: 480, height: 800, name: 'android-mdpi' },
+  { width: 720, height: 1280, name: 'android-hdpi' },
+  { width: 1080, height: 2340, name: 'android-tall' },
+  { width: 1440, height: 3200, name: 'android-tall-xxxhdpi' },
   { width: 1080, height: 1920, name: 'android-xxhdpi' },
   { width: 1440, height: 2560, name: 'android-xxxhdpi' },
 ] as const

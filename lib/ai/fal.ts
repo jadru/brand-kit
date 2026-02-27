@@ -1,8 +1,14 @@
 import { fal } from '@fal-ai/client'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
 import { composeIconPrompt } from '@/lib/prompts'
-import type { IconPromptConfig } from '@/lib/prompts'
-import { AI_CONFIG } from '@/lib/config/ai'
+import type {
+  IconPromptConfig,
+  IconVisualStyle,
+  IconShape,
+  IconEmotion,
+  IconColorScheme,
+} from '@/lib/prompts'
+import { AI_CONFIG, type FalQualityTier } from '@/lib/config/ai'
 
 fal.config({
   credentials: process.env.FAL_KEY!,
@@ -21,8 +27,14 @@ interface GenerateIconParams {
   description: string
   brandProfile?: BrandProfileInfo
   promptConfig?: IconPromptConfig
+  seed?: number
+  quality?: FalQualityTier
   styleModifier?: string
 }
+
+const ICON_NEGATIVE_PROMPT =
+  'text, letters, words, typography, watermark, signature, blurry, low quality, ' +
+  'multiple icons, busy background, photograph, realistic photo'
 
 /**
  * AI 아이콘 생성
@@ -30,6 +42,9 @@ interface GenerateIconParams {
  */
 export async function generateIcon(params: GenerateIconParams) {
   const { description, brandProfile, promptConfig, styleModifier } = params
+  const quality = params.quality ?? 'fast'
+  const modelConfig = AI_CONFIG.fal.models[quality]
+  const seed = params.seed ?? Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue)
 
   let prompt: string
 
@@ -40,22 +55,33 @@ export async function generateIcon(params: GenerateIconParams) {
 
     const composed = composeIconPrompt(promptConfig, brandColors)
     prompt = `${description}, ${composed.userPrompt}`
+  } else if (brandProfile) {
+    const autoConfig = brandProfileToPromptConfig(brandProfile)
+    const composed = composeIconPrompt(autoConfig, { primary: brandProfile.primaryColor })
+    prompt = `${description}, ${composed.userPrompt}`
   } else {
     // 기본 프롬프트 생성 (promptConfig 없는 경우)
     prompt = buildDefaultPrompt(description, brandProfile, styleModifier)
   }
 
-  const result = await fal.subscribe(AI_CONFIG.fal.model, {
-    input: {
-      prompt,
-      num_images: AI_CONFIG.fal.numImages,
-      image_size: AI_CONFIG.fal.imageSize,
-      num_inference_steps: AI_CONFIG.fal.numInferenceSteps,
-      seed: Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue),
-    },
+  const falInput: Record<string, unknown> = {
+    prompt,
+    negative_prompt: ICON_NEGATIVE_PROMPT,
+    num_images: AI_CONFIG.fal.numImages,
+    image_size: AI_CONFIG.fal.imageSize,
+    num_inference_steps: modelConfig.steps,
+    seed,
+  }
+
+  const result = await fal.subscribe(modelConfig.model, {
+    input: falInput as never,
   })
 
-  return result.data.images.map((img) => ({ url: img.url, seed: 0 }))
+  const resultSeed = getNumericSeed((result as { data?: { seed?: unknown } })?.data?.seed)
+  return result.data.images.map((img) => ({
+    url: img.url,
+    seed: getNumericSeed((img as { seed?: unknown }).seed) ?? resultSeed ?? seed,
+  }))
 }
 
 /**
@@ -89,6 +115,54 @@ function buildDefaultPrompt(
   ]
 
   return parts.filter(Boolean).join(', ')
+}
+
+function getNumericSeed(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    return value
+  }
+  if (typeof value === 'string' && /^\d+$/.test(value)) {
+    return Number(value)
+  }
+  return undefined
+}
+
+function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig {
+  const visualStyleMap: Record<IconStyle, IconVisualStyle> = {
+    outline: 'outline-medium',
+    filled: 'filled-solid',
+    '3d_soft': '3d-soft',
+    flat: 'flat-minimal',
+  }
+
+  const shapeMap: Record<CornerStyle, IconShape> = {
+    sharp: 'sharp-square',
+    rounded: 'rounded-square',
+    pill: 'circle',
+  }
+
+  const colorMap: Record<ColorMode, IconColorScheme> = {
+    mono: 'monochrome',
+    duotone: 'duotone',
+    gradient: 'gradient-linear',
+    vibrant: 'vibrant-multi',
+  }
+
+  const emotionMap: Record<StyleDirection, IconEmotion> = {
+    minimal: 'sophisticated',
+    playful: 'playful',
+    corporate: 'trustworthy',
+    tech: 'innovative',
+    custom: 'innovative',
+  }
+
+  return {
+    visualStyle: visualStyleMap[profile.iconStyle],
+    shape: shapeMap[profile.cornerStyle],
+    emotion: emotionMap[profile.styleDirection],
+    colorScheme: colorMap[profile.colorMode],
+    complexity: 'moderate',
+  }
 }
 
 function getStyleModifier(direction: StyleDirection): string {
