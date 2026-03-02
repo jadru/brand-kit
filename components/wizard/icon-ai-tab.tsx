@@ -100,6 +100,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
           description,
           styleModifier: stylePreset?.ai_style_modifier ?? undefined,
           negativePrompt: stylePreset?.icon_ai_negative_prompt ?? undefined,
+          promptTemplate: stylePreset?.icon_ai_prompt_template ?? undefined,
           brandProfile: brandProfile ? {
             styleDirection: brandProfile.style_direction,
             primaryColor: brandProfile.primary_color,

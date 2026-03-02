@@ -1,19 +1,11 @@
 import type {
   ComposedPrompt,
-  OgPromptConfig,
   IconPromptConfig,
   MetadataPromptConfig,
   FullPromptConfig,
-  ProjectContext,
   PromptCategory,
 } from './types'
 import { resolveConflicts } from './conflict-resolver'
-import {
-  ogLayoutCategories,
-  ogVisualCategories,
-  ogTypographyCategories,
-  ogMoodCategories,
-} from './categories/og-image'
 import {
   iconVisualStyleCategories,
   iconShapeCategories,
@@ -34,45 +26,6 @@ function findCategory<T extends string>(
 ): PromptCategory<T> | undefined {
   if (!id) return undefined
   return categories.find((c) => c.id === id)
-}
-
-// ========================================
-// OG Image Prompt Composer
-// ========================================
-
-export function composeOgPrompt(config: OgPromptConfig): ComposedPrompt {
-  const selectedCategories = [
-    findCategory(ogLayoutCategories, config.layout),
-    findCategory(ogVisualCategories, config.visual),
-    findCategory(ogTypographyCategories, config.typography),
-    findCategory(ogMoodCategories, config.mood),
-  ].filter(Boolean) as PromptCategory[]
-
-  const { resolved, warnings } = resolveConflicts(selectedCategories)
-  const fragments = resolved.map((c) => c.promptFragment)
-
-  if (config.customAccent) {
-    fragments.push(config.customAccent)
-  }
-
-  const systemPrompt = `You are an expert OG image designer creating Open Graph images for social media sharing.
-
-## Design Specifications
-- Dimensions: 1200x630 pixels (standard OG) or 1200x600 (Twitter)
-- Text must be readable at small preview sizes
-- High contrast between text and background
-- Maximum 2-3 text elements (title, subtitle, optional tagline)
-- Keep visual hierarchy clear and scannable
-
-## Style Direction
-Apply the following design principles to create a cohesive, professional OG image:`
-
-  return {
-    systemPrompt,
-    userPrompt: fragments.join('\n- '),
-    fragments,
-    warnings,
-  }
 }
 
 // ========================================
@@ -202,70 +155,6 @@ Generate brand copy for this project.`
     fragments,
     warnings,
   }
-}
-
-// ========================================
-// Full Prompt Composer
-// ========================================
-
-export function composeFullPrompt(
-  config: FullPromptConfig,
-  context: ProjectContext
-): {
-  og?: ComposedPrompt
-  icon?: ComposedPrompt
-  metadata?: ComposedPrompt
-} {
-  const result: {
-    og?: ComposedPrompt
-    icon?: ComposedPrompt
-    metadata?: ComposedPrompt
-  } = {}
-
-  if (config.og) {
-    result.og = composeOgPrompt({
-      layout: config.og.layout || 'centered',
-      visual: config.og.visual || 'none',
-      typography: config.og.typography || 'bold-modern',
-      mood: config.og.mood || 'professional',
-      customAccent: config.og.customAccent,
-    })
-  }
-
-  if (config.icon) {
-    result.icon = composeIconPrompt(
-      {
-        visualStyle: config.icon.visualStyle || 'filled-solid',
-        shape: config.icon.shape || 'rounded-square',
-        industry: config.icon.industry,
-        emotion: config.icon.emotion || 'innovative',
-        colorScheme: config.icon.colorScheme || 'brand-colors',
-        complexity: config.icon.complexity,
-      },
-      context.brandColors
-    )
-  }
-
-  if (config.metadata) {
-    result.metadata = composeMetadataPrompt(
-      {
-        tone: config.metadata.tone ?? 'professional',
-        audience: config.metadata.audience ?? 'b2c-general',
-        contentType: config.metadata.contentType ?? 'product-landing',
-        urgency: config.metadata.urgency,
-        focusKeywords: config.metadata.focusKeywords,
-        language: config.metadata.language,
-      },
-      {
-        name: context.projectName,
-        description: context.description,
-        platform: context.platform,
-        brandKeywords: context.brandKeywords,
-      }
-    )
-  }
-
-  return result
 }
 
 // ========================================

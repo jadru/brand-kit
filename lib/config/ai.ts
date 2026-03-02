@@ -6,8 +6,8 @@
 export const AI_CONFIG = {
   fal: {
     models: {
-      fast: { model: 'fal-ai/flux/schnell', steps: 4 },
-      quality: { model: 'fal-ai/flux/dev', steps: 25 },
+      fast: { model: 'fal-ai/flux/schnell', steps: 8 },
+      quality: { model: 'fal-ai/flux/dev', steps: 28 },
     },
     numImages: 4,
     imageSize: 'square_hd' as const,

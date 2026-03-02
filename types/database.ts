@@ -55,6 +55,7 @@ export interface StylePreset {
   ai_style_modifier: string | null
   og_ai_style_modifier: string | null
   icon_ai_negative_prompt: string | null
+  icon_ai_prompt_template: string | null
   preview_image_url: string | null
   sort_order: number
   created_at: string

@@ -1,21 +1,32 @@
 import { cn } from '@/lib/utils/cn'
-import type { LucideIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
+type EmptyStateAction = {
+  label: string
+  onClick: () => void
+} | React.ReactNode
 
 interface EmptyStateProps {
-  icon: LucideIcon
+  icon?: React.ReactNode
   title: string
   description?: string
-  action?: React.ReactNode
+  action?: EmptyStateAction
   className?: string
 }
 
 export function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   action,
   className,
 }: EmptyStateProps) {
+  const isPrimaryAction = (
+    value: EmptyStateAction | undefined
+  ): value is Extract<EmptyStateAction, { label: string; onClick: () => void }> => {
+    return !!value && typeof value === 'object' && 'label' in value && 'onClick' in value
+  }
+
   return (
     <div
       className={cn(
@@ -23,25 +34,31 @@ export function EmptyState({
         className
       )}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-tertiary text-text-tertiary">
-        <Icon className="h-7 w-7" aria-hidden="true" />
-      </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-text-primary">
-        {title}
-      </h3>
+      {icon && (
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-tertiary text-text-tertiary">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
       {description && (
         <p className="mt-2 max-w-sm text-sm text-text-secondary">
           {description}
         </p>
       )}
-      {action && <div className="mt-6">{action}</div>}
+      {isPrimaryAction(action) ? (
+        <Button onClick={action.onClick} className="mt-6">
+          {action.label}
+        </Button>
+      ) : (
+        action && <div className="mt-6">{action}</div>
+      )}
     </div>
   )
 }
 
 // Compact version for inline use
 interface EmptyStateInlineProps {
-  icon: LucideIcon
+  icon: React.ReactNode
   message: string
   className?: string
 }
@@ -58,7 +75,9 @@ export function EmptyStateInline({
         className
       )}
     >
-      <Icon className="h-5 w-5 text-text-tertiary" aria-hidden="true" />
+      <span className="h-5 w-5 text-text-tertiary" aria-hidden="true">
+        {Icon}
+      </span>
       {message}
     </div>
   )

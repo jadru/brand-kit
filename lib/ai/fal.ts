@@ -34,6 +34,7 @@ interface GenerateIconParams {
   quality?: FalQualityTier
   styleModifier?: string
   negativePrompt?: string
+  promptTemplate?: string
 }
 
 const ICON_NEGATIVE_PROMPT =
@@ -45,14 +46,16 @@ const ICON_NEGATIVE_PROMPT =
  * FAL AI의 Flux 모델을 사용하여 브랜드 스타일에 맞는 아이콘을 생성합니다.
  */
 export async function generateIcon(params: GenerateIconParams) {
-  const { description, brandProfile, promptConfig, styleModifier, negativePrompt } = params
+  const { description, brandProfile, promptConfig, styleModifier, negativePrompt, promptTemplate } = params
   const quality = params.quality ?? 'fast'
   const modelConfig = AI_CONFIG.fal.models[quality]
   const seed = params.seed ?? Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue)
 
   let prompt: string
 
-  if (promptConfig) {
+  if (promptTemplate) {
+    prompt = promptTemplate.replace('{description}', description)
+  } else if (promptConfig) {
     const brandColors = brandProfile
       ? { primary: brandProfile.primaryColor }
       : undefined
@@ -71,13 +74,16 @@ export async function generateIcon(params: GenerateIconParams) {
     prompt = buildDefaultPrompt(description, styleModifier)
   }
 
-  if (negativePrompt) {
+  // 템플릿 미사용 시에만 positive prompt에 Avoid 추가 (템플릿은 자체 제약 내장)
+  if (negativePrompt && !promptTemplate) {
     prompt += `. Avoid: ${negativePrompt}`
   }
 
+  const combinedNegativePrompt = [ICON_NEGATIVE_PROMPT, negativePrompt].filter(Boolean).join(', ')
+
   const falInput: Record<string, unknown> = {
     prompt,
-    negative_prompt: ICON_NEGATIVE_PROMPT,
+    negative_prompt: combinedNegativePrompt,
     num_images: AI_CONFIG.fal.numImages,
     image_size: AI_CONFIG.fal.imageSize,
     num_inference_steps: modelConfig.steps,
@@ -94,11 +100,6 @@ export async function generateIcon(params: GenerateIconParams) {
     seed: getNumericSeed((img as { seed?: unknown }).seed) ?? resultSeed ?? seed,
   }))
 }
-
-/**
- * @deprecated generateIcon을 대신 사용하세요
- */
-export const generateIconWithPromptConfig = generateIcon
 
 // ========================================
 // OG Background Generation
@@ -241,52 +242,5 @@ function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig
     emotion: emotionMap[profile.styleDirection],
     colorScheme: colorMap[profile.colorMode],
     complexity: 'moderate',
-  }
-}
-
-function getStyleModifier(direction: StyleDirection): string {
-  const map: Record<StyleDirection, string> = {
-    minimal: 'clean lines, simple shapes, whitespace, understated, elegant simplicity',
-    playful: 'rounded shapes, vibrant, friendly, bouncy, cheerful, soft edges',
-    corporate: 'professional, structured, balanced, trustworthy, refined',
-    tech: 'geometric, futuristic, sleek, digital, modern, sharp',
-    custom: '',
-  }
-  return map[direction]
-}
-
-function getIconStyleModifier(style: IconStyle): string {
-  const map: Record<IconStyle, string> = {
-    outline: 'thin outline, stroke-based, line art, no fill',
-    filled: 'solid fill, bold shapes, flat design',
-    '3d_soft': 'soft 3D render, subtle shadows, rounded, depth',
-    flat: 'flat design, solid colors, no shadows, minimal',
-  }
-  return map[style]
-}
-
-function getCornerStyleModifier(style: CornerStyle): string {
-  const map: Record<CornerStyle, string> = {
-    sharp: 'sharp corners, angular, precise edges',
-    rounded: 'rounded corners, soft edges',
-    pill: 'fully rounded, pill shape, circular elements',
-  }
-  return map[style]
-}
-
-function getColorInstruction(profile: BrandProfileInfo): string {
-  const { colorMode, primaryColor } = profile
-
-  switch (colorMode) {
-    case 'mono':
-      return `monochrome, single color ${primaryColor}`
-    case 'duotone':
-      return `duotone, ${primaryColor} and white`
-    case 'gradient':
-      return `gradient from ${primaryColor} to white`
-    case 'vibrant':
-      return `vibrant colors, ${primaryColor} as primary accent`
-    default:
-      return ''
   }
 }
