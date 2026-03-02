@@ -23,7 +23,7 @@ export function sendToAnalytics(metric: Metric, options?: { debug?: boolean }) {
 
   if (!analyticsId) {
     if (options?.debug) {
-      console.log('[Web Vitals]', metric.name, metric.value)
+      console.warn('[Web Vitals]', metric.name, metric.value)
     }
     return
   }

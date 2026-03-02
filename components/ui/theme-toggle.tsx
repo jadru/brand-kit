@@ -6,9 +6,16 @@ import { Button } from './button'
 
 type Theme = 'light' | 'dark' | 'system'
 
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') {
+    return 'system'
+  }
+
+  return (localStorage.getItem('theme') as Theme | null) ?? 'system'
+}
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('system')
-  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
 
   const applyTheme = useCallback((newTheme: Theme) => {
     const root = document.documentElement
@@ -21,13 +28,8 @@ export function ThemeToggle() {
   }, [])
 
   useEffect(() => {
-    setMounted(true)
-    const stored = localStorage.getItem('theme') as Theme | null
-    if (stored) {
-      setTheme(stored)
-      applyTheme(stored)
-    }
-  }, [applyTheme])
+    applyTheme(theme)
+  }, [applyTheme, theme])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
@@ -36,23 +38,18 @@ export function ThemeToggle() {
     applyTheme(newTheme)
   }
 
-  // 서버 렌더링 시 아이콘 깜빡임 방지
-  if (!mounted) {
-    return (
-      <Button variant="ghost" size="icon" aria-label="테마 변경" disabled>
-        <Sun className="h-5 w-5" aria-hidden="true" />
-      </Button>
-    )
-  }
-
+  const isSystemDark = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : false
   const isDark =
     theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    (theme === 'system' && isSystemDark)
 
   return (
     <Button
       variant="ghost"
       size="icon"
+      suppressHydrationWarning
       onClick={toggleTheme}
       aria-label={`현재 테마: ${theme === 'system' ? '시스템' : theme === 'dark' ? '다크' : '라이트'}. 클릭하여 변경`}
     >

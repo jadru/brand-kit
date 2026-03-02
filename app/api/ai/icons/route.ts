@@ -51,6 +51,8 @@ export async function POST(request: Request) {
       seed,
       quality,
       styleModifier: body.styleModifier,
+      negativePrompt: body.negativePrompt,
+      promptTemplate: body.promptTemplate,
     })
 
     await incrementUsage(admin, user.id, 'ai_icons_used_this_month')

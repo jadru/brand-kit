@@ -27,7 +27,7 @@ interface EmailRequestBody {
 export async function POST(request: NextRequest) {
   // Verify internal API key
   const authHeader = request.headers.get('authorization')
-  if (INTERNAL_API_KEY && authHeader !== `Bearer ${INTERNAL_API_KEY}`) {
+  if (!INTERNAL_API_KEY || authHeader !== `Bearer ${INTERNAL_API_KEY}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

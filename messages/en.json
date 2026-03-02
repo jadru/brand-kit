@@ -312,12 +312,18 @@
       "dashboard": "Dashboard",
       "projects": "Projects",
       "brandProfiles": "Brand Profiles",
-      "settings": "Settings"
+      "settings": "Settings",
+      "dashboardMenu": "Dashboard menu"
     },
     "plan": {
       "label": "Plan",
       "free": "Free",
-      "pro": "Pro"
+      "pro": "Pro",
+      "proActive": "Pro Plan active",
+      "unlimitedProjects": "Unlimited projects",
+      "freeProjectLimit": "{count} projects/month",
+      "upgrade": "Upgrade",
+      "goToDashboard": "BrandKit - Go to dashboard"
     }
   },
 
@@ -350,14 +356,20 @@
 
   "projects": {
     "title": "Projects",
-    "total": "project(s) total",
+    "total": "{count} project(s) total",
     "newProject": "New Project",
     "empty": {
-      "title": "No projects yet",
-      "description": "Create your first project to get started",
-      "cta": "Create your first project"
+      "title": "Create your first project",
+      "description": "Auto-generate 12+ brand assets including OG images, favicons, and app icons in 60 seconds.",
+      "cta": "New Project"
     },
-    "viewDetails": "View details"
+    "viewDetails": "View details",
+    "status": {
+      "draft": "Draft",
+      "generating": "Generating",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
   },
 
   "brandProfiles": {
@@ -372,6 +384,44 @@
       "created": "Profile created",
       "updated": "Profile updated",
       "deleted": "Profile deleted"
+    }
+  },
+
+  "wizard": {
+    "iconAi": {
+      "description": "Describe the icon you want and AI will generate 4 options.",
+      "label": "Icon Description",
+      "placeholder": "e.g., minimalist checkmark icon for task app",
+      "suggested": "Suggested:",
+      "generate": "Generate 4 Options"
+    }
+  },
+
+  "planGate": {
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlyDiscount": "-17%",
+    "perMonth": "/mo",
+    "billedYearly": "Billed ${price}/year (save ${savings})",
+    "upgrade": "Upgrade to Pro",
+    "processing": "Processing...",
+    "trust": "Cancel anytime \u2022 Money-back guarantee",
+    "benefits": {
+      "aiIcon": {
+        "unique": "Unique icons tailored to your brand",
+        "fourOptions": "AI generates 4 options automatically",
+        "commercial": "Commercial use allowed"
+      },
+      "brandProfiles": {
+        "five": "Up to 5 brand profiles",
+        "perProject": "Per-project style management",
+        "allPresets": "All style presets available"
+      },
+      "default": {
+        "unlimited": "Unlimited project creation",
+        "allPresets": "All style presets",
+        "priority": "Priority support"
+      }
     }
   },
 

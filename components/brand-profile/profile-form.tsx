@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { brandProfileSchema, type BrandProfileFormValues } from '@/lib/validations/brand-profile'
 import { Button } from '@/components/ui/button'
@@ -55,7 +55,12 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
     },
   })
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = form
+  const { register, handleSubmit, control, setValue, formState: { errors } } = form
+  const styleDirection = useWatch({ control, name: 'style_direction' }) ?? 'minimal'
+  const primaryColor = useWatch({ control, name: 'primary_color' }) ?? '#000000'
+  const colorMode = useWatch({ control, name: 'color_mode' }) ?? 'mono'
+  const iconStyle = useWatch({ control, name: 'icon_style' }) ?? 'outline'
+  const cornerStyle = useWatch({ control, name: 'corner_style' }) ?? 'rounded'
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -67,7 +72,7 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
       <div className="space-y-2">
         <Label required>Style Direction</Label>
         <StyleSelector
-          value={watch('style_direction')}
+          value={styleDirection}
           onChange={(v: StyleDirection) => setValue('style_direction', v)}
         />
         {errors.style_direction && <p className="text-xs text-error">{errors.style_direction.message}</p>}
@@ -75,7 +80,7 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
 
       <ColorPicker
         label="Primary Color"
-        value={watch('primary_color')}
+        value={primaryColor}
         onChange={(v) => setValue('primary_color', v)}
       />
 
@@ -88,7 +93,7 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
               type="button"
               onClick={() => setValue('color_mode', m.value)}
               className={`rounded-md border px-3 py-1.5 text-sm ${
-                watch('color_mode') === m.value
+                colorMode === m.value
                   ? 'border-brand bg-brand text-brand-foreground'
                   : 'border-border text-text-secondary hover:border-border-hover'
               }`}
@@ -108,7 +113,7 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
               type="button"
               onClick={() => setValue('icon_style', s.value)}
               className={`rounded-md border px-3 py-1.5 text-sm ${
-                watch('icon_style') === s.value
+                iconStyle === s.value
                   ? 'border-brand bg-brand text-brand-foreground'
                   : 'border-border text-text-secondary hover:border-border-hover'
               }`}
@@ -128,7 +133,7 @@ export function ProfileForm({ mode, defaultValues, onSubmit, onCancel, isLoading
               type="button"
               onClick={() => setValue('corner_style', c.value)}
               className={`rounded-md border px-3 py-1.5 text-sm ${
-                watch('corner_style') === c.value
+                cornerStyle === c.value
                   ? 'border-brand bg-brand text-brand-foreground'
                   : 'border-border text-text-secondary hover:border-border-hover'
               }`}

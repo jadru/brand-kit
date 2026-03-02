@@ -1,21 +1,24 @@
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Plus, ArrowRight, Sparkles } from 'lucide-react'
 import type { ProjectStatus } from '@/types/database'
 
-const STATUS_CONFIG: Record<ProjectStatus, { variant: 'default' | 'success' | 'warning' | 'error'; label: string }> = {
-  draft: { variant: 'default', label: '초안' },
-  generating: { variant: 'warning', label: '생성 중' },
-  completed: { variant: 'success', label: '완료' },
-  failed: { variant: 'error', label: '실패' },
+const STATUS_VARIANT: Record<ProjectStatus, 'default' | 'success' | 'warning' | 'error'> = {
+  draft: 'default',
+  generating: 'warning',
+  completed: 'success',
+  failed: 'error',
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const t = await getTranslations({ locale, namespace: 'projects' })
 
   const { data: projects } = await supabase
     .from('projects')
@@ -23,21 +26,23 @@ export default async function ProjectsPage() {
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
 
+  const dateLocale = locale === 'ko' ? 'ko-KR' : 'en-US'
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
-            Projects
+            {t('title')}
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            {projects?.length ?? 0} project{(projects?.length ?? 0) !== 1 ? 's' : ''} total
+            {t('total', { count: projects?.length ?? 0 })}
           </p>
         </div>
         <Link href="/projects/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            New Project
+            {t('newProject')}
           </Button>
         </Link>
       </div>
@@ -54,15 +59,15 @@ export default async function ProjectsPage() {
                 <Sparkles className="h-7 w-7 text-accent" />
               </div>
               <h3 className="mt-6 text-center text-lg font-semibold text-text-primary">
-                첫 프로젝트를 만들어보세요
+                {t('empty.title')}
               </h3>
               <p className="mx-auto mt-2 max-w-sm text-center text-sm text-text-secondary">
-                60초 안에 OG 이미지, 파비콘, 앱 아이콘 등 12종 이상의 브랜드 에셋을 자동 생성합니다.
+                {t('empty.description')}
               </p>
               <Link href="/projects/new" className="mt-6 flex justify-center">
                 <Button className="btn-glow">
                   <Plus className="mr-2 h-4 w-4" />
-                  새 프로젝트 만들기
+                  {t('empty.cta')}
                 </Button>
               </Link>
             </div>
@@ -91,7 +96,7 @@ export default async function ProjectsPage() {
                           {project.created_at && (
                             <>
                               {' \u00B7 '}
-                              {new Date(project.created_at).toLocaleDateString('ko-KR', {
+                              {new Date(project.created_at).toLocaleDateString(dateLocale, {
                                 month: 'short',
                                 day: 'numeric',
                               })}
@@ -99,12 +104,12 @@ export default async function ProjectsPage() {
                           )}
                         </p>
                       </div>
-                      <Badge variant={STATUS_CONFIG[project.status as ProjectStatus]?.variant || 'secondary'}>
-                        {STATUS_CONFIG[project.status as ProjectStatus]?.label || project.status}
+                      <Badge variant={STATUS_VARIANT[project.status as ProjectStatus] || 'secondary'}>
+                        {t(`status.${project.status as ProjectStatus}`)}
                       </Badge>
                     </div>
                     <div className="mt-4 flex items-center text-xs text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100">
-                      View details
+                      {t('viewDetails')}
                       <ArrowRight className="ml-1 h-3 w-3" />
                     </div>
                   </CardContent>

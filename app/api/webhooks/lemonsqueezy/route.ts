@@ -19,7 +19,9 @@ export async function POST(request: Request) {
   const hmac = crypto.createHmac('sha256', LEMONSQUEEZY_CONFIG.webhookSecret)
   const digest = hmac.update(body).digest('hex')
 
-  if (digest !== signature) {
+  const digestBuffer = Buffer.from(digest, 'hex')
+  const signatureBuffer = Buffer.from(signature, 'hex')
+  if (digestBuffer.length !== signatureBuffer.length || !crypto.timingSafeEqual(digestBuffer, signatureBuffer)) {
     return new Response('Invalid signature', { status: 401 })
   }
 

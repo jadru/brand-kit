@@ -1,5 +1,7 @@
 import { fal } from '@fal-ai/client'
+import sharp from 'sharp'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
+import type { Project, BrandProfile, StylePreset } from '@/types/database'
 import { composeIconPrompt } from '@/lib/prompts'
 import type {
   IconPromptConfig,
@@ -9,6 +11,7 @@ import type {
   IconColorScheme,
 } from '@/lib/prompts'
 import { AI_CONFIG, type FalQualityTier } from '@/lib/config/ai'
+import { AIGenerationError } from '@/lib/utils/errors'
 
 fal.config({
   credentials: process.env.FAL_KEY!,
@@ -30,6 +33,8 @@ interface GenerateIconParams {
   seed?: number
   quality?: FalQualityTier
   styleModifier?: string
+  negativePrompt?: string
+  promptTemplate?: string
 }
 
 const ICON_NEGATIVE_PROMPT =
@@ -41,14 +46,16 @@ const ICON_NEGATIVE_PROMPT =
  * FAL AI의 Flux 모델을 사용하여 브랜드 스타일에 맞는 아이콘을 생성합니다.
  */
 export async function generateIcon(params: GenerateIconParams) {
-  const { description, brandProfile, promptConfig, styleModifier } = params
+  const { description, brandProfile, promptConfig, styleModifier, negativePrompt, promptTemplate } = params
   const quality = params.quality ?? 'fast'
   const modelConfig = AI_CONFIG.fal.models[quality]
   const seed = params.seed ?? Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue)
 
   let prompt: string
 
-  if (promptConfig) {
+  if (promptTemplate) {
+    prompt = promptTemplate.replace('{description}', description)
+  } else if (promptConfig) {
     const brandColors = brandProfile
       ? { primary: brandProfile.primaryColor }
       : undefined
@@ -58,15 +65,25 @@ export async function generateIcon(params: GenerateIconParams) {
   } else if (brandProfile) {
     const autoConfig = brandProfileToPromptConfig(brandProfile)
     const composed = composeIconPrompt(autoConfig, { primary: brandProfile.primaryColor })
-    prompt = `${description}, ${composed.userPrompt}`
+    const promptParts = [description, composed.userPrompt]
+    if (styleModifier) {
+      promptParts.push(`Style reference: ${styleModifier}`)
+    }
+    prompt = promptParts.join('. ')
   } else {
-    // 기본 프롬프트 생성 (promptConfig 없는 경우)
-    prompt = buildDefaultPrompt(description, brandProfile, styleModifier)
+    prompt = buildDefaultPrompt(description, styleModifier)
   }
+
+  // 템플릿 미사용 시에만 positive prompt에 Avoid 추가 (템플릿은 자체 제약 내장)
+  if (negativePrompt && !promptTemplate) {
+    prompt += `. Avoid: ${negativePrompt}`
+  }
+
+  const combinedNegativePrompt = [ICON_NEGATIVE_PROMPT, negativePrompt].filter(Boolean).join(', ')
 
   const falInput: Record<string, unknown> = {
     prompt,
-    negative_prompt: ICON_NEGATIVE_PROMPT,
+    negative_prompt: combinedNegativePrompt,
     num_images: AI_CONFIG.fal.numImages,
     image_size: AI_CONFIG.fal.imageSize,
     num_inference_steps: modelConfig.steps,
@@ -84,10 +101,80 @@ export async function generateIcon(params: GenerateIconParams) {
   }))
 }
 
+// ========================================
+// OG Background Generation
+// ========================================
+
+interface GenerateOgBackgroundParams {
+  project: Project
+  brandProfile: BrandProfile | null
+  stylePreset: StylePreset
+  width: number
+  height: number
+}
+
 /**
- * @deprecated generateIcon을 대신 사용하세요
+ * OG 이미지 배경 AI 생성
+ * 스타일 프리셋의 og_ai_style_modifier를 사용하여 브랜드에 맞는 배경 이미지를 생성합니다.
  */
-export const generateIconWithPromptConfig = generateIcon
+export async function generateOgBackground(params: GenerateOgBackgroundParams): Promise<Buffer> {
+  const { project, brandProfile, stylePreset, width, height } = params
+
+  const primaryColor = project.primary_color_override || brandProfile?.primary_color || '#6366F1'
+  const secondaryColors = brandProfile?.secondary_colors?.length
+    ? brandProfile.secondary_colors.join(', ')
+    : null
+
+  const ogModifier = stylePreset.og_ai_style_modifier || stylePreset.ai_style_modifier || ''
+  const negativeTerms = stylePreset.icon_ai_negative_prompt || ''
+
+  // 구조화된 OG 배경 프롬프트
+  const promptParts = [
+    `A professional abstract background image for a brand called "${project.name}"`,
+    ogModifier,
+    `Primary color: ${primaryColor}`,
+    secondaryColors ? `Secondary colors: ${secondaryColors}` : null,
+    'Abstract decorative background only, no text, no logos, no human faces, no readable words, no letters',
+  ].filter(Boolean)
+
+  let prompt = promptParts.join('. ')
+
+  // 네거티브 지시사항 추가
+  const avoidTerms = [
+    'text', 'words', 'letters', 'numbers', 'logos', 'human faces', 'portraits',
+    negativeTerms,
+  ].filter(Boolean).join(', ')
+  prompt += `. Avoid: ${avoidTerms}`
+
+  let result
+  try {
+    result = await fal.subscribe(AI_CONFIG.falOg.model, {
+      input: {
+        prompt,
+        num_images: AI_CONFIG.falOg.numImages,
+        image_size: AI_CONFIG.falOg.imageSize,
+        num_inference_steps: AI_CONFIG.falOg.numInferenceSteps,
+        seed: Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue),
+      },
+    })
+  } catch {
+    throw new AIGenerationError('fal')
+  }
+
+  const imageUrl = result.data?.images?.[0]?.url
+  if (!imageUrl) {
+    throw new AIGenerationError('fal')
+  }
+
+  // 생성된 이미지를 정확한 크기로 리사이즈
+  const response = await fetch(imageUrl)
+  const buffer = Buffer.from(await response.arrayBuffer())
+
+  return sharp(buffer)
+    .resize(width, height, { fit: 'cover' })
+    .png()
+    .toBuffer()
+}
 
 // ========================================
 // Internal Helpers
@@ -95,19 +182,12 @@ export const generateIconWithPromptConfig = generateIcon
 
 function buildDefaultPrompt(
   description: string,
-  brandProfile?: BrandProfileInfo,
   styleModifier?: string,
 ): string {
   const parts = [
     description,
-    styleModifier || '',
-    brandProfile ? getStyleModifier(brandProfile.styleDirection) : '',
-    brandProfile?.keywords.join(', ') || '',
+    styleModifier ? `Style reference: ${styleModifier}` : '',
     'single centered icon',
-    brandProfile ? getColorInstruction(brandProfile) : '',
-    'white background',
-    brandProfile ? getIconStyleModifier(brandProfile.iconStyle) : '',
-    brandProfile ? getCornerStyleModifier(brandProfile.cornerStyle) : '',
     'clean professional app icon design',
     'high quality, vector-style rendering',
     'no text, no letters, no watermark',
@@ -162,52 +242,5 @@ function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig
     emotion: emotionMap[profile.styleDirection],
     colorScheme: colorMap[profile.colorMode],
     complexity: 'moderate',
-  }
-}
-
-function getStyleModifier(direction: StyleDirection): string {
-  const map: Record<StyleDirection, string> = {
-    minimal: 'clean lines, simple shapes, whitespace, understated, elegant simplicity',
-    playful: 'rounded shapes, vibrant, friendly, bouncy, cheerful, soft edges',
-    corporate: 'professional, structured, balanced, trustworthy, refined',
-    tech: 'geometric, futuristic, sleek, digital, modern, sharp',
-    custom: '',
-  }
-  return map[direction]
-}
-
-function getIconStyleModifier(style: IconStyle): string {
-  const map: Record<IconStyle, string> = {
-    outline: 'thin outline, stroke-based, line art, no fill',
-    filled: 'solid fill, bold shapes, flat design',
-    '3d_soft': 'soft 3D render, subtle shadows, rounded, depth',
-    flat: 'flat design, solid colors, no shadows, minimal',
-  }
-  return map[style]
-}
-
-function getCornerStyleModifier(style: CornerStyle): string {
-  const map: Record<CornerStyle, string> = {
-    sharp: 'sharp corners, angular, precise edges',
-    rounded: 'rounded corners, soft edges',
-    pill: 'fully rounded, pill shape, circular elements',
-  }
-  return map[style]
-}
-
-function getColorInstruction(profile: BrandProfileInfo): string {
-  const { colorMode, primaryColor } = profile
-
-  switch (colorMode) {
-    case 'mono':
-      return `monochrome, single color ${primaryColor}`
-    case 'duotone':
-      return `duotone, ${primaryColor} and white`
-    case 'gradient':
-      return `gradient from ${primaryColor} to white`
-    case 'vibrant':
-      return `vibrant colors, ${primaryColor} as primary accent`
-    default:
-      return ''
   }
 }

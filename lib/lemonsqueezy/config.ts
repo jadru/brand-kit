@@ -4,7 +4,7 @@ export const LEMONSQUEEZY_CONFIG = {
   webhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET!,
   proMonthlyVariantId: process.env.LEMONSQUEEZY_PRO_VARIANT_ID!,
   proYearlyVariantId: process.env.LEMONSQUEEZY_PRO_YEARLY_VARIANT_ID || process.env.LEMONSQUEEZY_PRO_VARIANT_ID!,
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''),
   portalBaseUrl: 'https://app.lemonsqueezy.com',
 }
 

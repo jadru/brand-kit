@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     try {
       const startedAt = Date.now()
-      const { storageUrl } = await runAssetPipeline({
+      const { storageUrl, warnings } = await runAssetPipeline({
         project,
         brandProfile,
         stylePreset,
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
         durationMs: Date.now() - startedAt,
       })
 
-      return Response.json({ success: true, url: storageUrl })
+      return Response.json({ success: true, url: storageUrl, warnings })
     } catch (pipelineError) {
       await supabase
         .from('projects')

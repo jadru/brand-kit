@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Lock, Sparkles, ArrowRight, Zap } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Plan } from '@/types/database'
@@ -20,15 +21,20 @@ interface PlanGateProps {
 const PLAN_RANK: Record<Plan, number> = { free: 0, pro: 1 }
 
 const FEATURE_BENEFITS: Record<string, string[]> = {
-  'AI 아이콘 생성': [
-    '브랜드에 맞는 유니크한 아이콘',
-    'AI가 4개 옵션 자동 생성',
-    '상업적 사용 가능',
+  'AI Icon Generation': [
+    'benefits.aiIcon.unique',
+    'benefits.aiIcon.fourOptions',
+    'benefits.aiIcon.commercial',
+  ],
+  'Additional brand profiles': [
+    'benefits.brandProfiles.five',
+    'benefits.brandProfiles.perProject',
+    'benefits.brandProfiles.allPresets',
   ],
   'default': [
-    '무제한 프로젝트 생성',
-    '모든 스타일 프리셋 사용',
-    '우선 지원',
+    'benefits.default.unlimited',
+    'benefits.default.allPresets',
+    'benefits.default.priority',
   ],
 }
 
@@ -42,6 +48,7 @@ export function PlanGate({
 }: PlanGateProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('month')
+  const t = useTranslations('planGate')
 
   if (PLAN_RANK[currentPlan] >= PLAN_RANK[requiredPlan]) {
     return <>{children}</>
@@ -49,7 +56,7 @@ export function PlanGate({
 
   if (fallback) return <>{fallback}</>
 
-  const benefits = FEATURE_BENEFITS[feature] || FEATURE_BENEFITS['default']
+  const benefitKeys = FEATURE_BENEFITS[feature] || FEATURE_BENEFITS['default']
   const isYearly = billingInterval === 'year'
   const displayPrice = isYearly
     ? `$${PLAN_PRICING.pro.yearly.monthlyEquivalent}`
@@ -102,10 +109,10 @@ export function PlanGate({
 
         {/* Benefits list */}
         <ul className="mt-2 space-y-2 text-left">
-          {benefits.map((benefit, idx) => (
+          {benefitKeys.map((key, idx) => (
             <li key={idx} className="flex items-center gap-2 text-sm text-text-secondary">
               <Zap className="h-4 w-4 shrink-0 text-accent" />
-              {benefit}
+              {t(key)}
             </li>
           ))}
         </ul>
@@ -118,7 +125,7 @@ export function PlanGate({
               !isYearly ? 'bg-surface text-text-primary shadow-sm' : 'text-text-tertiary'
             }`}
           >
-            월간
+            {t('monthly')}
           </button>
           <button
             onClick={() => setBillingInterval('year')}
@@ -126,19 +133,19 @@ export function PlanGate({
               isYearly ? 'bg-surface text-text-primary shadow-sm' : 'text-text-tertiary'
             }`}
           >
-            연간 <span className="text-accent">-17%</span>
+            {t('yearly')} <span className="text-accent">{t('yearlyDiscount')}</span>
           </button>
         </div>
 
         {/* Price */}
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-bold text-text-primary">{displayPrice}</span>
-          <span className="text-sm text-text-tertiary">/월</span>
+          <span className="text-sm text-text-tertiary">{t('perMonth')}</span>
         </div>
 
         {isYearly && (
           <p className="text-xs text-accent">
-            연 ${PLAN_PRICING.pro.yearly.price} 결제 (${PLAN_PRICING.pro.yearly.savings} 절약)
+            {t('billedYearly', { price: PLAN_PRICING.pro.yearly.price, savings: PLAN_PRICING.pro.yearly.savings })}
           </p>
         )}
 
@@ -149,17 +156,17 @@ export function PlanGate({
           className="group mt-2 w-full bg-accent hover:bg-accent/90"
         >
           {isLoading ? (
-            '처리 중...'
+            t('processing')
           ) : (
             <>
-              Pro로 업그레이드
+              {t('upgrade')}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </>
           )}
         </Button>
 
         {/* Trust signal */}
-        <p className="text-xs text-text-tertiary">언제든 취소 가능 • 환불 보장</p>
+        <p className="text-xs text-text-tertiary">{t('trust')}</p>
       </div>
     </div>
   )
