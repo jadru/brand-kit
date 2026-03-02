@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { runAssetPipeline } from '@/lib/assets/pipeline'
+import { logger } from '@/lib/utils/logger'
 import {
   handleApiError,
   UnauthorizedError,
@@ -32,7 +33,6 @@ export async function POST(request: Request) {
       throw new ValidationError('프로젝트 ID가 필요합니다.')
     }
 
-    // 프로젝트 조회
     const { data: projectData, error: projectError } = await supabase
       .from('projects')
       .select('*')
@@ -46,7 +46,6 @@ export async function POST(request: Request) {
 
     const project = projectData as Project
 
-    // 브랜드 프로필 조회 (선택적)
     let brandProfile: BrandProfile | null = null
     if (project.brand_profile_id) {
       const { data: brandData } = await supabase
@@ -57,7 +56,6 @@ export async function POST(request: Request) {
       brandProfile = brandData as BrandProfile | null
     }
 
-    // 스타일 프리셋 조회
     const { data: presetData, error: presetError } = await supabase
       .from('style_presets')
       .select('*')
@@ -70,13 +68,13 @@ export async function POST(request: Request) {
 
     const stylePreset = presetData as StylePreset
 
-    // 상태 업데이트: 생성 중
     await supabase
       .from('projects')
       .update({ status: 'generating' })
       .eq('id', projectId)
 
     try {
+      const startedAt = Date.now()
       const { storageUrl, warnings } = await runAssetPipeline({
         project,
         brandProfile,
@@ -89,13 +87,24 @@ export async function POST(request: Request) {
         .update({ status: 'completed', assets_zip_url: storageUrl })
         .eq('id', projectId)
 
+      logger.info('asset.generate.completed', {
+        projectId,
+        userId: user.id,
+        durationMs: Date.now() - startedAt,
+      })
+
       return Response.json({ success: true, url: storageUrl, warnings })
     } catch (pipelineError) {
-      // 파이프라인 실패 시 상태 업데이트
       await supabase
         .from('projects')
         .update({ status: 'failed' })
         .eq('id', projectId)
+
+      logger.error('asset.generate.pipeline_failed', {
+        projectId,
+        userId: user.id,
+        error: pipelineError instanceof Error ? pipelineError.message : String(pipelineError),
+      })
 
       throw new AppError(
         pipelineError instanceof Error ? pipelineError.message : '에셋 생성 실패',

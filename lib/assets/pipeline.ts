@@ -6,6 +6,7 @@ import { generatePWAManifest } from './pwa-manifest'
 import { generateCodeSnippets } from './code-snippets'
 import { createZip } from './zip-packager'
 import { uploadToStorage } from '@/lib/supabase/storage'
+import { logger } from '@/lib/utils/logger'
 import { type IconSource } from '@/lib/utils/image'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
 
@@ -25,6 +26,14 @@ interface PipelineInput {
  */
 export async function runAssetPipeline(input: PipelineInput) {
   const { project, brandProfile, stylePreset, userId } = input
+  const pipelineStartedAt = Date.now()
+
+  logger.info('asset.pipeline.start', {
+    projectId: project.id,
+    platform: project.platform,
+    mobileTarget: project.mobile_target,
+  })
+
   const iconSource = await resolveIconSource(project)
 
   const results = {
@@ -40,34 +49,43 @@ export async function runAssetPipeline(input: PipelineInput) {
   const isWeb = project.platform === 'web' || project.platform === 'all'
   const isMobile = project.platform === 'mobile' || project.platform === 'all'
 
-  // Phase 1: 경량 작업 병렬 실행 (메모리 사용량 적음)
   const lightweightTasks: Promise<void>[] = []
 
   if (isWeb) {
     lightweightTasks.push(
-      generatePWAManifest({ project }).then((r) => {
-        results.pwaManifest = r
+      generatePWAManifest({ project }).then((manifest) => {
+        results.pwaManifest = manifest
       })
     )
   }
 
   lightweightTasks.push(
-    generateCodeSnippets({ project }).then((r) => {
-      results.codeSnippets = r
+    generateCodeSnippets({ project }).then((snippets) => {
+      results.codeSnippets = snippets
     })
   )
 
-  // Phase 2: 이미지 생성 작업 순차 실행 (메모리 관리)
-  // 경량 작업과 병렬로 시작하되, 이미지 작업끼리는 순차 실행
   const imageTask = (async () => {
     if (isWeb) {
+      const faviconsStart = Date.now()
       results.favicons = await generateFavicons({ iconSource, project, brandProfile, stylePreset })
+      logger.debug('asset.pipeline.favicons.done', {
+        durationMs: Date.now() - faviconsStart,
+        files: Object.keys(results.favicons).length,
+      })
+
+      const ogStart = Date.now()
       const ogResult = await generateOgImages({ project, brandProfile, stylePreset })
       results.ogImages = ogResult.files
       warnings.push(...ogResult.warnings)
+      logger.debug('asset.pipeline.og.done', {
+        durationMs: Date.now() - ogStart,
+        files: Object.keys(results.ogImages).length,
+      })
     }
 
     if (isMobile) {
+      const appIconsStart = Date.now()
       results.appIcons = await generateAppIcons({
         iconSource,
         project,
@@ -75,6 +93,12 @@ export async function runAssetPipeline(input: PipelineInput) {
         stylePreset,
         mobileTarget: project.mobile_target,
       })
+      logger.debug('asset.pipeline.app_icons.done', {
+        durationMs: Date.now() - appIconsStart,
+        files: Object.keys(results.appIcons).length,
+      })
+
+      const splashStart = Date.now()
       results.splashScreens = await generateSplashScreens({
         iconSource,
         project,
@@ -82,18 +106,34 @@ export async function runAssetPipeline(input: PipelineInput) {
         stylePreset,
         mobileTarget: project.mobile_target,
       })
+      logger.debug('asset.pipeline.splash.done', {
+        durationMs: Date.now() - splashStart,
+        files: Object.keys(results.splashScreens).length,
+      })
     }
   })()
 
-  // 모든 작업 완료 대기
   await Promise.all([...lightweightTasks, imageTask])
 
+  const zipStart = Date.now()
   const zipBuffer = await createZip({ project, results })
+  logger.debug('asset.pipeline.zip.done', {
+    durationMs: Date.now() - zipStart,
+    bytes: zipBuffer.length,
+  })
+
+  const uploadStart = Date.now()
   const storageUrl = await uploadToStorage({
     userId,
     projectId: project.id,
     buffer: zipBuffer,
     filename: 'assets.zip',
+  })
+
+  logger.info('asset.pipeline.completed', {
+    projectId: project.id,
+    durationMs: Date.now() - pipelineStartedAt,
+    uploadDurationMs: Date.now() - uploadStart,
   })
 
   return { storageUrl, results, warnings }
@@ -105,13 +145,33 @@ async function resolveIconSource(project: Project): Promise<IconSource> {
   }
 
   if (project.icon_type === 'symbol') {
-    // Symbol icons use Lucide components at render time.
-    // For asset generation, render the symbol as a simple circle + letter fallback.
-    return { type: 'text', value: project.icon_value?.charAt(0)?.toUpperCase() || 'S' }
+    const fallback = project.icon_value?.charAt(0)?.toUpperCase() || 'S'
+    return { type: 'text', value: fallback }
   }
 
-  // AI generated image
-  const response = await fetch(project.icon_value!)
+  if (!project.icon_value) {
+    throw new Error('AI-generated icon URL is missing (icon_value is null)')
+  }
+
+  let response: Response
+  try {
+    response = await fetch(project.icon_value)
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch AI-generated icon from ${project.icon_value}: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch AI-generated icon: HTTP ${response.status} from ${project.icon_value}${response.status === 403 ? ' (URL may have expired)' : ''}`
+    )
+  }
+
   const buffer = Buffer.from(await response.arrayBuffer())
+  if (buffer.length === 0) {
+    throw new Error(`AI-generated icon from ${project.icon_value} returned empty data`)
+  }
+
   return { type: 'image', buffer }
 }

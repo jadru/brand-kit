@@ -5,10 +5,12 @@
 
 export const AI_CONFIG = {
   fal: {
-    model: 'fal-ai/flux/dev',
+    models: {
+      fast: { model: 'fal-ai/flux/schnell', steps: 4 },
+      quality: { model: 'fal-ai/flux/dev', steps: 25 },
+    },
     numImages: 4,
     imageSize: 'square_hd' as const,
-    numInferenceSteps: 25,
     maxSeedValue: 1000000,
   },
   falOg: {
@@ -24,3 +26,4 @@ export const AI_CONFIG = {
 } as const
 
 export type FalImageSize = typeof AI_CONFIG.fal.imageSize | typeof AI_CONFIG.falOg.imageSize
+export type FalQualityTier = keyof typeof AI_CONFIG.fal.models

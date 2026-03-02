@@ -16,6 +16,7 @@ interface SplashInput {
 export async function generateSplashScreens(input: SplashInput) {
   const { iconSource, project, brandProfile, stylePreset, mobileTarget } = input
   const results: Record<string, Buffer> = {}
+  const imagePngOptions = { compressionLevel: 9, effort: 10 } as const
 
   const iconSize = 200
   const iconBuffer = await renderIconToBuffer(iconSource, iconSize, project, stylePreset, brandProfile)
@@ -51,7 +52,7 @@ export async function generateSplashScreens(input: SplashInput) {
 
     results[`splash/${name}.png`] = await sharp(bgBuffer)
       .composite([{ input: iconBuffer, gravity: 'centre' }])
-      .png()
+      .png(imagePngOptions)
       .toBuffer()
   }
 

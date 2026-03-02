@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { generateIcon } from '@/lib/ai/fal'
+import { type FalQualityTier } from '@/lib/config/ai'
 import { checkUsage, incrementUsage } from '@/lib/utils/rate-limit'
 import {
   handleApiError,
@@ -34,9 +35,21 @@ export async function POST(request: Request) {
       throw new ValidationError('아이콘 설명이 필요합니다.')
     }
 
+    const quality = body.quality as FalQualityTier | undefined
+    if (quality && quality !== 'fast' && quality !== 'quality') {
+      throw new ValidationError('유효하지 않은 품질 옵션입니다.')
+    }
+
+    const seed = body.seed as number | undefined
+    if (seed !== undefined && (!Number.isInteger(seed) || seed < 0)) {
+      throw new ValidationError('유효하지 않은 seed 값입니다.')
+    }
+
     const images = await generateIcon({
       description: body.description,
       brandProfile: body.brandProfile,
+      seed,
+      quality,
       styleModifier: body.styleModifier,
       negativePrompt: body.negativePrompt,
     })

@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
               "img-src 'self' blob: data: https://*.supabase.co https://*.fal.media",
               "font-src 'self' https://cdn.jsdelivr.net",
-              "connect-src 'self' https://*.supabase.co https://api.fal.ai https://api.lemonsqueezy.com https://www.google-analytics.com https://vitals.vercel-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://api.fal.ai https://api.lemonsqueezy.com https://www.google-analytics.com https://vitals.vercel-analytics.com https://cdn.jsdelivr.net",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

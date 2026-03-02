@@ -1,11 +1,20 @@
-/**
- * 환경별 로깅 유틸리티
- * 개발 환경에서는 상세 로그, 프로덕션에서는 에러만 출력
- */
-
-const isDev = process.env.NODE_ENV === 'development'
-
 type LogData = unknown
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+const LOG_LEVEL_ORDER: Record<LogLevel, number> = {
+  debug: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+}
+
+const rawLogLevel = process.env.ASSET_LOG_LEVEL?.toLowerCase()
+const activeLogLevel: LogLevel = rawLogLevel === 'debug' ||
+  rawLogLevel === 'info' ||
+  rawLogLevel === 'warn' ||
+  rawLogLevel === 'error'
+  ? rawLogLevel
+  : 'info'
 
 interface Logger {
   debug: (message: string, data?: LogData) => void
@@ -14,38 +23,50 @@ interface Logger {
   error: (message: string, data?: LogData) => void
 }
 
+function shouldLog(level: LogLevel): boolean {
+  return LOG_LEVEL_ORDER[level] >= LOG_LEVEL_ORDER[activeLogLevel]
+}
+
+function writeLog(level: LogLevel, message: string, data?: LogData) {
+  if (!shouldLog(level)) {
+    return
+  }
+
+  const payload = {
+    ts: new Date().toISOString(),
+    level,
+    msg: message,
+    ...(data !== undefined ? { data } : {}),
+  }
+
+  const serialized = JSON.stringify(payload)
+  if (level === 'error') {
+    console.error(serialized)
+    return
+  }
+
+  if (level === 'warn') {
+    console.warn(serialized)
+    return
+  }
+
+  process.stdout.write(`${serialized}\n`)
+}
+
 export const logger: Logger = {
-  /**
-   * 디버그 로그 (개발 환경에서만 출력)
-   */
   debug: (message: string, data?: LogData) => {
-    if (isDev) {
-      console.log(`[DEBUG] ${message}`, data !== undefined ? data : '')
-    }
+    writeLog('debug', message, data)
   },
 
-  /**
-   * 정보 로그 (개발 환경에서만 출력)
-   */
   info: (message: string, data?: LogData) => {
-    if (isDev) {
-      console.log(`[INFO] ${message}`, data !== undefined ? data : '')
-    }
+    writeLog('info', message, data)
   },
 
-  /**
-   * 경고 로그 (개발 환경에서만 출력)
-   */
   warn: (message: string, data?: LogData) => {
-    if (isDev) {
-      console.warn(`[WARN] ${message}`, data !== undefined ? data : '')
-    }
+    writeLog('warn', message, data)
   },
 
-  /**
-   * 에러 로그 (항상 출력 - 프로덕션 디버깅에 필요)
-   */
   error: (message: string, data?: LogData) => {
-    console.error(`[ERROR] ${message}`, data !== undefined ? data : '')
+    writeLog('error', message, data)
   },
 }

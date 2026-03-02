@@ -3,8 +3,14 @@ import sharp from 'sharp'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
 import { composeIconPrompt } from '@/lib/prompts'
-import type { IconPromptConfig, IconVisualStyle, IconShape, IconColorScheme } from '@/lib/prompts'
-import { AI_CONFIG } from '@/lib/config/ai'
+import type {
+  IconPromptConfig,
+  IconVisualStyle,
+  IconShape,
+  IconEmotion,
+  IconColorScheme,
+} from '@/lib/prompts'
+import { AI_CONFIG, type FalQualityTier } from '@/lib/config/ai'
 import { AIGenerationError } from '@/lib/utils/errors'
 
 fal.config({
@@ -24,9 +30,15 @@ interface GenerateIconParams {
   description: string
   brandProfile?: BrandProfileInfo
   promptConfig?: IconPromptConfig
+  seed?: number
+  quality?: FalQualityTier
   styleModifier?: string
   negativePrompt?: string
 }
+
+const ICON_NEGATIVE_PROMPT =
+  'text, letters, words, typography, watermark, signature, blurry, low quality, ' +
+  'multiple icons, busy background, photograph, realistic photo'
 
 /**
  * AI 아이콘 생성
@@ -34,6 +46,9 @@ interface GenerateIconParams {
  */
 export async function generateIcon(params: GenerateIconParams) {
   const { description, brandProfile, promptConfig, styleModifier, negativePrompt } = params
+  const quality = params.quality ?? 'fast'
+  const modelConfig = AI_CONFIG.fal.models[quality]
+  const seed = params.seed ?? Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue)
 
   let prompt: string
 
@@ -45,52 +60,39 @@ export async function generateIcon(params: GenerateIconParams) {
     const composed = composeIconPrompt(promptConfig, brandColors)
     prompt = `${description}, ${composed.userPrompt}`
   } else if (brandProfile) {
-    // 브랜드 프로필이 있으면 자동으로 IconPromptConfig 도출하여 구조화된 프롬프트 생성
-    const derivedConfig = deriveIconPromptConfig(brandProfile)
-    const brandColors = { primary: brandProfile.primaryColor }
-    const composed = composeIconPrompt(derivedConfig, brandColors)
-
-    // 구조화된 프롬프트: description + composed system + style modifier
-    const promptParts = [
-      description,
-      composed.userPrompt,
-    ]
-
+    const autoConfig = brandProfileToPromptConfig(brandProfile)
+    const composed = composeIconPrompt(autoConfig, { primary: brandProfile.primaryColor })
+    const promptParts = [description, composed.userPrompt]
     if (styleModifier) {
       promptParts.push(`Style reference: ${styleModifier}`)
     }
-
     prompt = promptParts.join('. ')
   } else {
     prompt = buildDefaultPrompt(description, styleModifier)
   }
 
-  // 네거티브 프롬프트를 positive prompt에 Avoid 섹션으로 추가
   if (negativePrompt) {
     prompt += `. Avoid: ${negativePrompt}`
   }
 
-  let result
-  try {
-    result = await fal.subscribe(AI_CONFIG.fal.model, {
-      input: {
-        prompt,
-        num_images: AI_CONFIG.fal.numImages,
-        image_size: AI_CONFIG.fal.imageSize,
-        num_inference_steps: AI_CONFIG.fal.numInferenceSteps,
-        seed: Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue),
-      },
-    })
-  } catch (error) {
-    throw new AIGenerationError('fal')
+  const falInput: Record<string, unknown> = {
+    prompt,
+    negative_prompt: ICON_NEGATIVE_PROMPT,
+    num_images: AI_CONFIG.fal.numImages,
+    image_size: AI_CONFIG.fal.imageSize,
+    num_inference_steps: modelConfig.steps,
+    seed,
   }
 
-  const images = result.data?.images
-  if (!Array.isArray(images) || images.length === 0) {
-    throw new AIGenerationError('fal')
-  }
+  const result = await fal.subscribe(modelConfig.model, {
+    input: falInput as never,
+  })
 
-  return images.map((img) => ({ url: img.url, seed: 0 }))
+  const resultSeed = getNumericSeed((result as { data?: { seed?: unknown } })?.data?.seed)
+  return result.data.images.map((img) => ({
+    url: img.url,
+    seed: getNumericSeed((img as { seed?: unknown }).seed) ?? resultSeed ?? seed,
+  }))
 }
 
 /**
@@ -177,47 +179,6 @@ export async function generateOgBackground(params: GenerateOgBackgroundParams): 
 // Internal Helpers
 // ========================================
 
-/**
- * BrandProfile 데이터에서 IconPromptConfig를 자동 도출
- */
-function deriveIconPromptConfig(brandProfile: BrandProfileInfo): IconPromptConfig {
-  const visualStyleMap: Record<IconStyle, IconVisualStyle> = {
-    outline: 'outline-medium',
-    filled: 'filled-solid',
-    '3d_soft': '3d-soft',
-    flat: 'flat-minimal',
-  }
-
-  const shapeMap: Record<CornerStyle, IconShape> = {
-    sharp: 'sharp-square',
-    rounded: 'rounded-square',
-    pill: 'circle',
-  }
-
-  const colorSchemeMap: Record<ColorMode, IconColorScheme> = {
-    mono: 'monochrome',
-    duotone: 'duotone',
-    gradient: 'gradient-linear',
-    vibrant: 'vibrant-multi',
-  }
-
-  const emotionMap: Record<StyleDirection, IconPromptConfig['emotion']> = {
-    minimal: 'sophisticated',
-    playful: 'friendly',
-    corporate: 'trustworthy',
-    tech: 'innovative',
-    custom: 'innovative',
-  }
-
-  return {
-    visualStyle: visualStyleMap[brandProfile.iconStyle],
-    shape: shapeMap[brandProfile.cornerStyle],
-    colorScheme: colorSchemeMap[brandProfile.colorMode],
-    emotion: emotionMap[brandProfile.styleDirection],
-    complexity: 'moderate',
-  }
-}
-
 function buildDefaultPrompt(
   description: string,
   styleModifier?: string,
@@ -233,4 +194,99 @@ function buildDefaultPrompt(
   ]
 
   return parts.filter(Boolean).join(', ')
+}
+
+function getNumericSeed(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    return value
+  }
+  if (typeof value === 'string' && /^\d+$/.test(value)) {
+    return Number(value)
+  }
+  return undefined
+}
+
+function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig {
+  const visualStyleMap: Record<IconStyle, IconVisualStyle> = {
+    outline: 'outline-medium',
+    filled: 'filled-solid',
+    '3d_soft': '3d-soft',
+    flat: 'flat-minimal',
+  }
+
+  const shapeMap: Record<CornerStyle, IconShape> = {
+    sharp: 'sharp-square',
+    rounded: 'rounded-square',
+    pill: 'circle',
+  }
+
+  const colorMap: Record<ColorMode, IconColorScheme> = {
+    mono: 'monochrome',
+    duotone: 'duotone',
+    gradient: 'gradient-linear',
+    vibrant: 'vibrant-multi',
+  }
+
+  const emotionMap: Record<StyleDirection, IconEmotion> = {
+    minimal: 'sophisticated',
+    playful: 'playful',
+    corporate: 'trustworthy',
+    tech: 'innovative',
+    custom: 'innovative',
+  }
+
+  return {
+    visualStyle: visualStyleMap[profile.iconStyle],
+    shape: shapeMap[profile.cornerStyle],
+    emotion: emotionMap[profile.styleDirection],
+    colorScheme: colorMap[profile.colorMode],
+    complexity: 'moderate',
+  }
+}
+
+function getStyleModifier(direction: StyleDirection): string {
+  const map: Record<StyleDirection, string> = {
+    minimal: 'clean lines, simple shapes, whitespace, understated, elegant simplicity',
+    playful: 'rounded shapes, vibrant, friendly, bouncy, cheerful, soft edges',
+    corporate: 'professional, structured, balanced, trustworthy, refined',
+    tech: 'geometric, futuristic, sleek, digital, modern, sharp',
+    custom: '',
+  }
+  return map[direction]
+}
+
+function getIconStyleModifier(style: IconStyle): string {
+  const map: Record<IconStyle, string> = {
+    outline: 'thin outline, stroke-based, line art, no fill',
+    filled: 'solid fill, bold shapes, flat design',
+    '3d_soft': 'soft 3D render, subtle shadows, rounded, depth',
+    flat: 'flat design, solid colors, no shadows, minimal',
+  }
+  return map[style]
+}
+
+function getCornerStyleModifier(style: CornerStyle): string {
+  const map: Record<CornerStyle, string> = {
+    sharp: 'sharp corners, angular, precise edges',
+    rounded: 'rounded corners, soft edges',
+    pill: 'fully rounded, pill shape, circular elements',
+  }
+  return map[style]
+}
+
+function getColorInstruction(profile: BrandProfileInfo): string {
+  const { colorMode, primaryColor } = profile
+
+  switch (colorMode) {
+    case 'mono':
+      return `monochrome, single color ${primaryColor}`
+    case 'duotone':
+      return `duotone, ${primaryColor} and white`
+    case 'gradient':
+      return `gradient from ${primaryColor} to white`
+    case 'vibrant':
+      return `vibrant colors, ${primaryColor} as primary accent`
+    default:
+      return ''
+  }
 }
