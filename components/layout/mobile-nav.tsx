@@ -29,11 +29,6 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
     triggerButtonRef.current?.focus()
   }, [])
 
-  // pathname 변경 시 메뉴 닫기 (외부 시스템 동기화)
-  useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -63,7 +58,7 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
   }, [isOpen, close])
 
   return (
-    <>
+    <div key={pathname}>
       <button
         ref={triggerButtonRef}
         onClick={() => setIsOpen(true)}
@@ -144,6 +139,6 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

@@ -98,7 +98,7 @@ export function trackEvent<T extends AnalyticsEventName>(
 ): void {
   // Placeholder - will be implemented with GA4 in Phase 5
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Analytics]', event, params)
+    console.warn('[Analytics]', event, params)
   }
 
   // TODO: Implement actual tracking in Phase 5

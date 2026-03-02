@@ -15,7 +15,7 @@ export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
 
   return (
     <>
-      <Script id="ga4-consent" strategy="beforeInteractive">
+      <Script id="ga4-consent" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}

@@ -18,7 +18,7 @@ const SVG_SOURCE = join(ROOT, 'public/icons/icon.svg')
 const OUTPUT_DIR = join(ROOT, 'public/icons')
 
 async function generateIcons() {
-  console.log('🎨 Generating PWA icons...')
+  console.warn('🎨 Generating PWA icons...')
 
   if (!existsSync(OUTPUT_DIR)) {
     mkdirSync(OUTPUT_DIR, { recursive: true })
@@ -34,10 +34,10 @@ async function generateIcons() {
       .png()
       .toFile(outputPath)
 
-    console.log(`  ✅ Generated: icon-${size}.png`)
+    console.warn(`  ✅ Generated: icon-${size}.png`)
   }
 
-  console.log('🎉 All icons generated successfully!')
+  console.warn('🎉 All icons generated successfully!')
 }
 
 generateIcons().catch((err) => {

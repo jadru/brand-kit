@@ -38,7 +38,7 @@ export async function sendEmail({ to, subject, react, replyTo }: SendEmailOption
   const client = getResendClient()
 
   if (!client) {
-    console.log('[Email] Skipped (no API key):', { to, subject })
+    console.warn('[Email] Skipped (no API key):', { to, subject })
     return { success: false, error: 'Email not configured' }
   }
 

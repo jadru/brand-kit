@@ -15,7 +15,7 @@ interface UseOnlineStatusOptions {
  */
 export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
   const { showToasts = true, onOnline, onOffline } = options
-  const [isOnline, setIsOnline] = useState(true)
+  const [isOnline, setIsOnline] = useState(() => (typeof window === 'undefined' ? true : navigator.onLine))
   const [wasOffline, setWasOffline] = useState(false)
 
   const handleOnline = useCallback(() => {
@@ -47,9 +47,8 @@ export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
   }, [showToasts, onOffline])
 
   useEffect(() => {
-    // 초기 상태 설정 (SSR 안전)
-    if (typeof window !== 'undefined') {
-      setIsOnline(navigator.onLine)
+    if (typeof window === 'undefined') {
+      return
     }
 
     window.addEventListener('online', handleOnline)

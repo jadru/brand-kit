@@ -157,7 +157,7 @@ export async function generateOgBackground(params: GenerateOgBackgroundParams): 
         seed: Math.floor(Math.random() * AI_CONFIG.fal.maxSeedValue),
       },
     })
-  } catch (error) {
+  } catch {
     throw new AIGenerationError('fal')
   }
 

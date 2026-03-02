@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { ChevronDown, HelpCircle, Mail, ArrowRight } from 'lucide-react'
 
@@ -28,13 +28,7 @@ function FAQItem({
 }) {
   const t = useTranslations('landing')
   const contentRef = useRef<HTMLDivElement>(null)
-  const [height, setHeight] = useState(0)
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setHeight(isOpen ? contentRef.current.scrollHeight : 0)
-    }
-  }, [isOpen])
+  const panelHeight = isOpen ? `${contentRef.current?.scrollHeight ?? 0}px` : '0px'
 
   return (
     <div
@@ -95,7 +89,7 @@ function FAQItem({
       </button>
       <div
         className="overflow-hidden transition-all duration-300 ease-out"
-        style={{ height }}
+        style={{ height: panelHeight }}
       >
         <div ref={contentRef} className="px-6 pb-5">
           <div className="ml-10 border-l-2 border-accent/20 pl-4">
