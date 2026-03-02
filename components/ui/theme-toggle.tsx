@@ -29,7 +29,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     applyTheme(theme)
-  }, [applyTheme])
+  }, [applyTheme, theme])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'

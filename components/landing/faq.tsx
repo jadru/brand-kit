@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { ChevronDown, HelpCircle, Mail, ArrowRight } from 'lucide-react'
 
@@ -27,8 +27,7 @@ function FAQItem({
   index: number
 }) {
   const t = useTranslations('landing')
-  const contentRef = useRef<HTMLDivElement>(null)
-  const panelHeight = isOpen ? `${contentRef.current?.scrollHeight ?? 0}px` : '0px'
+  const panelMaxHeightClass = isOpen ? 'max-h-[9999px] opacity-100' : 'max-h-0 opacity-0'
 
   return (
     <div
@@ -88,10 +87,9 @@ function FAQItem({
         </div>
       </button>
       <div
-        className="overflow-hidden transition-all duration-300 ease-out"
-        style={{ height: panelHeight }}
+        className={`overflow-hidden transition-all duration-300 ease-out ${panelMaxHeightClass}`}
       >
-        <div ref={contentRef} className="px-6 pb-5">
+        <div className="px-6 pb-5">
           <div className="ml-10 border-l-2 border-accent/20 pl-4">
             <p className="text-sm leading-relaxed text-text-secondary">
               {t(answerKey)}
