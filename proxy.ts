@@ -6,7 +6,7 @@ import { isProtectedPath, isAuthRedirectPath } from '@/lib/config/routes'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 먼저 i18n 미들웨어 처리
   const intlResponse = intlMiddleware(request)
 

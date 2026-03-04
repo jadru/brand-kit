@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
     await supabase
       .from('projects')
-      .update({ status: 'generating' })
+      .update({ status: 'generating', pipeline_stage: 'icon_resolve' })
       .eq('id', projectId)
 
     try {
@@ -80,11 +80,18 @@ export async function POST(request: Request) {
         brandProfile,
         stylePreset,
         userId: user.id,
+        onStage: (stage) => {
+          supabase
+            .from('projects')
+            .update({ pipeline_stage: stage })
+            .eq('id', projectId)
+            .then(() => {})
+        },
       })
 
       await supabase
         .from('projects')
-        .update({ status: 'completed', assets_zip_url: storageUrl })
+        .update({ status: 'completed', assets_zip_url: storageUrl, pipeline_stage: null })
         .eq('id', projectId)
 
       logger.info('asset.generate.completed', {
@@ -97,7 +104,7 @@ export async function POST(request: Request) {
     } catch (pipelineError) {
       await supabase
         .from('projects')
-        .update({ status: 'failed' })
+        .update({ status: 'failed', pipeline_stage: null })
         .eq('id', projectId)
 
       logger.error('asset.generate.pipeline_failed', {

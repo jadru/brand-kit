@@ -9,7 +9,6 @@ const testimonials = [
     content: 'testimonials.items.1.content',
     author: 'testimonials.items.1.author',
     role: 'testimonials.items.1.role',
-    avatar: 'J',
     color: '#6366F1',
     highlight: false,
   },
@@ -18,7 +17,6 @@ const testimonials = [
     content: 'testimonials.items.2.content',
     author: 'testimonials.items.2.author',
     role: 'testimonials.items.2.role',
-    avatar: 'S',
     color: '#EC4899',
     highlight: true,
   },
@@ -27,7 +25,6 @@ const testimonials = [
     content: 'testimonials.items.3.content',
     author: 'testimonials.items.3.author',
     role: 'testimonials.items.3.role',
-    avatar: 'M',
     color: '#10B981',
     highlight: false,
   },
@@ -36,11 +33,16 @@ const testimonials = [
     content: 'testimonials.items.4.content',
     author: 'testimonials.items.4.author',
     role: 'testimonials.items.4.role',
-    avatar: 'A',
     color: '#F97316',
     highlight: false,
   },
 ]
+
+function getAvatarText(value: string) {
+  const cleaned = value.replace(/[^A-Za-z0-9가-힣]/g, '')
+  if (!cleaned) return 'BK'
+  return cleaned.slice(0, 2).toUpperCase()
+}
 
 export function Testimonials() {
   const t = useTranslations('landing')
@@ -68,10 +70,16 @@ export function Testimonials() {
 
         {/* Testimonials grid */}
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {testimonials.map((testimonial, idx) => (
-            <div
-              key={testimonial.id}
-              className={`
+          {testimonials.map((testimonial, idx) => {
+            const author = t(testimonial.author)
+            const role = t(testimonial.role)
+            const content = t(testimonial.content)
+            const avatarText = getAvatarText(author)
+
+            return (
+              <div
+                key={testimonial.id}
+                className={`
                 group relative overflow-hidden rounded-2xl border bg-surface p-6
                 card-interactive animate-reveal-up
                 ${testimonial.highlight
@@ -79,54 +87,59 @@ export function Testimonials() {
                   : 'border-border hover:border-border-hover'
                 }
               `}
-              style={{ animationDelay: `${idx * 100}ms` }}
-            >
-              {/* Highlight glow */}
-              {testimonial.highlight && (
-                <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 blur-2xl transition-all group-hover:bg-accent/20" />
-              )}
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                {/* Highlight glow */}
+                {testimonial.highlight && (
+                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/10 blur-2xl transition-all group-hover:bg-accent/20" />
+                )}
 
-              {/* Stars */}
-              <div className="relative mb-4 flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-4 w-4 fill-amber-400 text-amber-400 transition-transform group-hover:scale-110"
-                    style={{ transitionDelay: `${i * 30}ms` }}
-                  />
-                ))}
-              </div>
+                {/* Stars */}
+                <div className="relative mb-4 flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-4 w-4 fill-amber-400 text-amber-400 transition-transform group-hover:scale-110"
+                      style={{ transitionDelay: `${i * 30}ms` }}
+                    />
+                  ))}
+                </div>
 
-              {/* Content */}
-              <p className="relative text-sm leading-relaxed text-text-secondary">
-                <span className="text-2xl leading-none text-text-tertiary">&ldquo;</span>
-                {t(testimonial.content)}
-                <span className="text-2xl leading-none text-text-tertiary">&rdquo;</span>
-              </p>
+                {/* Content */}
+                <p className="relative text-sm leading-relaxed text-text-secondary">
+                  <span className="text-2xl leading-none text-text-tertiary">&ldquo;</span>
+                  {content}
+                  <span className="text-2xl leading-none text-text-tertiary">&rdquo;</span>
+                </p>
 
-              {/* Author */}
-              <div className="mt-6 flex items-center gap-3">
-                <div
-                  className="relative flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white shadow-md transition-transform group-hover:scale-105"
-                  style={{ backgroundColor: testimonial.color }}
-                >
-                  {testimonial.avatar}
+                {/* Author */}
+                <div className="mt-6 flex items-center gap-3">
                   <div
-                    className="absolute inset-0 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-                    style={{ boxShadow: `0 0 16px ${testimonial.color}40` }}
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">
-                    {t(testimonial.author)}
-                  </p>
-                  <p className="text-xs text-text-tertiary">
-                    {t(testimonial.role)}
-                  </p>
+                    className="relative flex h-11 w-11 items-center justify-center rounded-full text-xs font-semibold text-white shadow-md transition-transform group-hover:scale-105"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, ${testimonial.color}, ${testimonial.color}aa)`,
+                    }}
+                  >
+                    <span className="rounded-sm bg-white/20 px-1.5 py-0.5 text-[11px] uppercase text-white shadow-sm">
+                      {avatarText}
+                    </span>
+                    <div
+                      className="absolute inset-0 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{ boxShadow: `0 0 16px ${testimonial.color}40` }}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">
+                      {author}
+                    </p>
+                    <p className="text-xs text-text-tertiary">
+                      {role}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Trust badges */}

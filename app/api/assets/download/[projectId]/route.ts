@@ -6,6 +6,7 @@ import {
   ValidationError,
 } from '@/lib/utils/errors'
 import type { Project } from '@/types/database'
+import { createProjectAssetSignedUrl, getProjectAssetStoragePath } from '@/lib/supabase/storage'
 
 export async function GET(
   _request: Request,
@@ -37,15 +38,15 @@ export async function GET(
       throw new NotFoundError('에셋 파일')
     }
 
-    const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(
-      'https://',
-      ''
-    )
-    if (!project.assets_zip_url.includes(supabaseHost)) {
+    let downloadUrl = ''
+    try {
+      const storagePath = getProjectAssetStoragePath(project.assets_zip_url)
+      downloadUrl = await createProjectAssetSignedUrl(storagePath)
+    } catch {
       throw new ValidationError('유효하지 않은 저장소 URL입니다.')
     }
 
-    const response = await fetch(project.assets_zip_url)
+    const response = await fetch(downloadUrl)
     const buffer = await response.arrayBuffer()
 
     return new Response(buffer, {

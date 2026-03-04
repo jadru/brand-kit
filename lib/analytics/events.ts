@@ -1,6 +1,7 @@
 /**
  * Analytics Event Definitions for CRO tracking
  */
+import { trackEvent as trackGtagEvent } from './gtag'
 
 export const AnalyticsEvents = {
   // Landing Page Events
@@ -79,7 +80,7 @@ export interface AnalyticsEventParams {
   // Conversion
   [AnalyticsEvents.UPGRADE_PROMPT_VIEW]: { trigger: string }
   [AnalyticsEvents.UPGRADE_CLICK]: { source: string }
-  [AnalyticsEvents.CHECKOUT_START]: { plan: 'pro' }
+  [AnalyticsEvents.CHECKOUT_START]: { plan: 'pro'; source?: string }
   [AnalyticsEvents.CHECKOUT_COMPLETE]: { plan: 'pro'; price: number }
 
   // Engagement
@@ -88,21 +89,31 @@ export interface AnalyticsEventParams {
   [AnalyticsEvents.FEATURE_REQUEST]: { feature: string }
 }
 
-/**
- * Type-safe analytics tracking function placeholder
- * Will be implemented with actual analytics provider (GA4, etc.) in Phase 5
- */
+function sanitizeParams(input: Record<string, unknown>) {
+  const result: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (value !== undefined) {
+      result[key] = value
+    }
+  }
+
+  return result
+}
+
 export function trackEvent<T extends AnalyticsEventName>(
   event: T,
   params: T extends keyof AnalyticsEventParams ? AnalyticsEventParams[T] : never
 ): void {
-  // Placeholder - will be implemented with GA4 in Phase 5
+  const payload = sanitizeParams((params ?? {}) as Record<string, unknown>)
+
+  // Development logs help verify instrumentation quickly.
   if (process.env.NODE_ENV === 'development') {
-    console.warn('[Analytics]', event, params)
+    console.warn('[Analytics]', event, payload)
   }
 
-  // TODO: Implement actual tracking in Phase 5
-  // if (typeof window !== 'undefined' && window.gtag) {
-  //   window.gtag('event', event, params)
-  // }
+  if (typeof window === 'undefined') return
+  if (typeof window.gtag !== 'function') return
+
+  trackGtagEvent(event, payload)
 }

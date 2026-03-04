@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import { Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils/cn'
 
 interface StepIndicatorProps {
@@ -11,8 +12,10 @@ interface StepIndicatorProps {
 }
 
 export const StepIndicator = memo(function StepIndicator({ steps, currentStep, onStepClick }: StepIndicatorProps) {
+  const t = useTranslations('wizard.progress')
+
   return (
-    <nav aria-label="Wizard progress">
+    <nav aria-label={t('label', { current: currentStep + 1, total: steps.length })}>
       {/* Desktop */}
       <ol className="hidden items-center sm:flex">
         {steps.map((step, index) => {
@@ -64,7 +67,7 @@ export const StepIndicator = memo(function StepIndicator({ steps, currentStep, o
       {/* Mobile */}
       <div className="flex items-center justify-between sm:hidden">
         <span className="text-sm font-medium text-text-primary">
-          Step {currentStep + 1} of {steps.length}
+          {t('label', { current: currentStep + 1, total: steps.length })}
         </span>
         <span className="text-sm text-text-secondary">
           {steps[currentStep]?.label}

@@ -91,26 +91,3 @@ Generate brand copy for this project.`
 
   return JSON.parse(cleaned)
 }
-
-/**
- * @deprecated generateHeadlines를 대신 사용하세요
- */
-export async function generateHeadlinesWithPromptConfig(
-  projectContext: {
-    name: string
-    description?: string
-    platform: string
-    brandKeywords?: string[]
-    brandStyleDirection?: string
-  },
-  promptConfig: MetadataPromptConfig
-): Promise<HeadlineResponse> {
-  return generateHeadlines({
-    projectName: projectContext.name,
-    description: projectContext.description,
-    platform: projectContext.platform,
-    brandKeywords: projectContext.brandKeywords,
-    brandStyleDirection: projectContext.brandStyleDirection,
-    promptConfig,
-  })
-}

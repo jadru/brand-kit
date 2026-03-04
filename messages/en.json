@@ -2,6 +2,7 @@
   "common": {
     "brandName": "BrandKit",
     "login": "Log in",
+    "demo": "Demo",
     "signup": "Sign up",
     "logout": "Sign out",
     "loading": "Loading...",
@@ -55,6 +56,7 @@
       "headlineSub": "Auto-generate assets.",
       "description": "Save colors and styles to Brand Profile, and AI generates Favicon, OG Image, App Icon and all platform assets.",
       "ctaPrimary": "Start for free",
+      "ctaDemo": "Try demo",
       "ctaSecondary": "Learn more",
       "trustNoCreditCard": "No credit card required",
       "trustFreePlan": "Free forever plan",
@@ -257,6 +259,9 @@
       "emailPlaceholder": "you@example.com",
       "password": "Password",
       "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "submit": "Log in",
       "noAccount": "Don't have an account?",
       "signupLink": "Sign up",
@@ -279,9 +284,20 @@
       "passwordPlaceholder": "At least 6 characters",
       "confirmPassword": "Confirm Password",
       "confirmPlaceholder": "Re-enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "submit": "Sign up with Email",
       "hasAccount": "Already have an account?",
       "loginLink": "Log in",
+      "validation": {
+        "passwordsDoNotMatch": "Passwords do not match.",
+        "passwordTooShort": "Password must be at least 6 characters."
+      },
+      "passwordChecks": {
+        "length": "6+ characters",
+        "match": "Passwords match",
+        "mismatch": "Passwords don't match"
+      },
       "success": {
         "title": "Check your email",
         "description": "We sent a confirmation link to {email}. Click the link to activate your account.",
@@ -297,22 +313,59 @@
         }
       }
     },
-    "oauth": {
-      "google": "Google",
-      "github": "GitHub"
+      "oauth": {
+        "google": "Google",
+        "github": "GitHub"
+      },
+    "forgotPassword": {
+      "title": "Reset password",
+      "description": "Enter your account email and we will send you a reset link.",
+      "email": "Email",
+      "submit": "Send reset link",
+      "backToLogin": "Back to login",
+      "successTitle": "Check your email",
+      "successDescription": "If we found an account for {email}, a reset email is on the way."
     },
-    "validation": {
-      "passwordsDoNotMatch": "Passwords do not match.",
-      "passwordTooShort": "Password must be at least 6 characters."
-    }
-  },
+      "validation": {
+        "passwordsDoNotMatch": "Passwords do not match.",
+        "passwordTooShort": "Password must be at least 6 characters."
+      }
+    },
 
   "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welcome back",
+    "welcome": "Welcome back, {email}",
+    "stats": {
+      "projectsThisMonth": "Projects this month",
+      "aiHeadlines": "AI Headlines",
+      "brandProfiles": "Brand Profiles"
+    },
+    "actions": {
+      "newProject": "New Project",
+      "manageProfiles": "Manage Profiles",
+      "viewAll": "View all"
+    },
+    "recentProjects": {
+      "title": "Recent Projects",
+      "onboardingTitle": "Get started in 3 steps",
+      "onboardingDescription": "Set up quickly and generate your first brand asset in under 2 minutes.",
+      "step1": "Create a brand profile",
+      "step2": "Create your first project",
+      "step3": "Generate and download your assets"
+    },
+    "empty": {
+      "title": "No project yet",
+      "description": "Start with one project to understand how quickly BrandKit works.",
+      "cta": "Create your first project"
+    },
     "nav": {
       "dashboard": "Dashboard",
       "projects": "Projects",
       "brandProfiles": "Brand Profiles",
       "settings": "Settings",
+      "menuOpen": "Open navigation menu",
+      "menuClose": "Close navigation menu",
       "dashboardMenu": "Dashboard menu"
     },
     "plan": {
@@ -350,7 +403,54 @@
       "title": "Security",
       "subtitle": "Authentication and security settings",
       "signout": "Sign out",
-      "signoutDesc": "Sign out of your account on this device"
+      "signoutDesc": "Sign out of your account on this device",
+      "changeEmail": {
+        "title": "Change email",
+        "description": "Update your login email. You will need to confirm the new address.",
+        "newEmailLabel": "New email",
+        "newEmailPlaceholder": "you@example.com",
+        "submit": "Update email",
+        "saving": "Updating...",
+        "success": "Confirmation email sent to {email}.",
+        "errors": {
+          "invalidEmail": "Enter a valid email address.",
+          "sameAsCurrent": "This is already your current email.",
+          "unknown": "Failed to update email. Please try again."
+        }
+      },
+      "changePassword": {
+        "title": "Change password",
+        "description": "Set a new password for your account.",
+        "newPasswordLabel": "New password",
+        "newPasswordPlaceholder": "At least 6 characters",
+        "confirmPasswordLabel": "Confirm new password",
+        "confirmPasswordPlaceholder": "Re-enter new password",
+        "submit": "Update password",
+        "saving": "Updating...",
+        "success": "Password updated successfully.",
+        "errors": {
+          "mismatch": "Passwords do not match.",
+          "tooShort": "Password must be at least 6 characters.",
+          "unknown": "Failed to update password. Please try again."
+        }
+      },
+      "deleteAccount": {
+        "title": "Delete account",
+        "description": "Account deletion is handled manually to prevent accidental data loss.",
+        "step1": "Email support from your account email address.",
+        "step2": "Include your user ID for faster verification.",
+        "step3": "Your data will be permanently removed after verification.",
+        "contactButton": "Contact support for deletion"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "subtitle": "Manage your plan and subscription",
+      "currentPlan": "Current plan",
+      "manage": "Manage subscription",
+      "planComparison": "Plan comparison",
+      "planFree": "Free",
+      "planPro": "Pro"
     }
   },
 
@@ -358,6 +458,33 @@
     "title": "Projects",
     "total": "{count} project(s) total",
     "newProject": "New Project",
+    "newDescription": "Create brand assets in a few steps.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search project names",
+      "status": "Status",
+      "statusAll": "All status",
+      "apply": "Apply",
+      "reset": "Reset",
+      "noResults": "No projects found with the current filters."
+    },
+    "platform": {
+      "web": "Web",
+      "mobile": "Mobile",
+      "all": "All"
+    },
+    "detail": {
+      "download": "Download",
+      "copy": "Duplicate",
+      "regenerate": "Regenerate",
+      "retry": "Retry",
+      "downloadReady": "Your assets are ready",
+      "code": "Code",
+      "copied": "Duplicated",
+      "downloading": "Downloading...",
+      "duplicateFailed": "Failed to duplicate",
+      "duplicating": "Duplicating..."
+    },
     "empty": {
       "title": "Create your first project",
       "description": "Auto-generate 12+ brand assets including OG images, favicons, and app icons in 60 seconds.",
@@ -388,12 +515,165 @@
   },
 
   "wizard": {
+    "steps": {
+      "brand": {
+        "label": "Brand",
+        "description": "Select a brand profile to apply consistent styling."
+      },
+      "platform": {
+        "label": "Platform",
+        "description": "Choose where your assets will be used."
+      },
+      "project": {
+        "label": "Project",
+        "description": "Enter project information and generate AI copy."
+      },
+      "style": {
+        "label": "Style",
+        "description": "Pick a style preset for your brand assets."
+      },
+      "icon": {
+        "label": "Icon",
+        "description": "Pick text, symbol, or AI-generated icon."
+      },
+      "preview": {
+        "label": "Done",
+        "description": "Review and download generated assets."
+      }
+    },
+    "projectInfo": {
+      "title": "Project Info",
+      "description": "Name your project and optionally generate AI copy.",
+      "projectName": "Project Name",
+      "projectNamePlaceholder": "My Awesome App",
+      "descriptionLabel": "Short Description",
+      "descriptionPlaceholder": "A brief description of your project",
+      "copyTitle": "AI SEO Copy",
+      "headlinesLabel": "Headlines",
+      "generate": "Generate AI Headlines",
+      "regenerate": "Regenerate",
+      "headline": "Headline",
+      "tagline": "Tagline",
+      "ogDescription": "OG Description",
+      "shortSlogan": "Short Slogan",
+      "useThisCopy": "Use this copy",
+      "applied": "Applied",
+      "errors": {
+        "usageLimitExceeded": "AI headline usage limit exceeded. Upgrade to Pro for unlimited generation.",
+        "generationFailed": "Failed to generate headlines"
+      }
+    },
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "generateAssets": "Generate Assets"
+    },
+    "errors": {
+      "projectSaveFailed": "Failed to save project.",
+      "projectSaveUnknownError": "An error occurred while saving the project.",
+      "generationRequestFailed": "Failed to start generation.",
+      "statusCheckFailed": "Failed to check generation status.",
+      "generationTimeout": "Generation timed out. Please retry.",
+      "generationFailed": "Asset generation failed."
+    },
+    "style": {
+      "title": "Style Preset",
+      "description": "Select a style preset for your brand assets.",
+      "profileRecommendation": "Recommendations based on your \"{profileName}\" profile.",
+      "close": "Close",
+      "bestForFallback": "Balanced default style",
+      "projectColorOverride": "Project Color Override",
+      "useBrandColor": "Use brand color",
+      "useDifferentColor": "Use a different color for this project",
+      "proPreset": "This preset is available for Pro users only.",
+      "lockedPresetTitle": "{presetName} is a Pro-only preset",
+      "lockedPresetDescription": "Upgrade to Pro to use this style in your generated assets.",
+      "goPro": "Upgrade to Pro",
+      "lockButton": "Go to Pro"
+    },
+    "preset": {
+      "recommendedBadge": "Rec",
+      "proBadge": "PRO",
+      "cardAriaLabel": "{name} style preset {status}",
+      "previewTitle": "Mini preview"
+    },
+    "preview": {
+      "title": "Asset Preview",
+      "generatingTitle": "Generating assets...",
+      "generatingDescription": "Your assets are being generated. This usually finishes within 5 minutes.",
+      "failedTitle": "Generation failed",
+      "unknownError": "An unknown error occurred.",
+      "retry": "Generate again",
+      "download": "Download all assets",
+      "downloadReady": "Your assets were generated successfully. You can download them as a ZIP file.",
+      "regenerate": "Regenerate",
+      "warningTitle": "Generation notice",
+      "warnings": {
+        "icon_fallback": "Unable to render the selected icon in OG assets. We used a text fallback.",
+        "ai_bg_fallback": "AI background generation failed. Used the default gradient background instead."
+      },
+      "progress": {
+        "currentStage": "Current stage: {stage}",
+        "stages": {
+          "icon_resolve": "Resolving icon",
+          "favicons": "Generating favicons",
+          "og": "Rendering OG images",
+          "app_icons": "Generating app icons",
+          "splash": "Generating splash screens",
+          "zip": "Packaging files",
+          "upload": "Uploading assets"
+        },
+        "shortStages": {
+          "icon_resolve": "Icon",
+          "favicons": "Favicons",
+          "og": "OG",
+          "app_icons": "App Icons",
+          "splash": "Splash",
+          "zip": "Zip",
+          "upload": "Upload"
+        }
+      }
+    },
+    "progress": {
+      "label": "Step {current} of {total}"
+    },
     "iconAi": {
       "description": "Describe the icon you want and AI will generate 4 options.",
       "label": "Icon Description",
       "placeholder": "e.g., minimalist checkmark icon for task app",
       "suggested": "Suggested:",
-      "generate": "Generate 4 Options"
+      "generate": "Generate 4 Options",
+      "errors": {
+        "generationFailed": "Generation failed",
+        "networkError": "Failed to generate icons",
+        "serverError": "Server error: {status} {statusText}"
+      },
+      "usageMeterLabel": "AI Icons",
+      "generatedAlt": "Generated icon option {index}",
+      "seed": "Seed {seed}",
+      "qualityLabel": "Generation Quality",
+      "quality": {
+        "fast": "Fast (Flux Schnell)",
+        "quality": "High Quality (Flux Dev)"
+      },
+      "similar": "Similar"
+    },
+    "iconText": {
+      "label": "Letter(s)",
+      "description": "Use one or two letters as your icon. The first letter of your project name is used by default."
+    },
+    "iconSymbol": {
+      "description": "Choose a symbol from the library for your icon."
+    },
+    "iconStep": {
+      "title": "Choose an Icon",
+      "description": "Pick a text, symbol, or AI-generated icon for your project.",
+      "tabs": {
+        "text": "Text",
+        "symbol": "Symbol",
+        "ai": "AI Generate",
+        "aiPro": "(Pro)"
+      }
     }
   },
 

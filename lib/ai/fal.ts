@@ -1,4 +1,4 @@
-import { fal } from '@fal-ai/client'
+import { fal, type RunOptions } from '@fal-ai/client'
 import sharp from 'sharp'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
@@ -35,6 +35,15 @@ interface GenerateIconParams {
   styleModifier?: string
   negativePrompt?: string
   promptTemplate?: string
+}
+
+interface FalFluxInput {
+  prompt: string
+  negative_prompt?: string
+  num_images?: number
+  image_size?: typeof AI_CONFIG.fal.imageSize
+  num_inference_steps?: number
+  seed?: number
 }
 
 const ICON_NEGATIVE_PROMPT =
@@ -81,7 +90,7 @@ export async function generateIcon(params: GenerateIconParams) {
 
   const combinedNegativePrompt = [ICON_NEGATIVE_PROMPT, negativePrompt].filter(Boolean).join(', ')
 
-  const falInput: Record<string, unknown> = {
+  const falInput: FalFluxInput = {
     prompt,
     negative_prompt: combinedNegativePrompt,
     num_images: AI_CONFIG.fal.numImages,
@@ -90,8 +99,12 @@ export async function generateIcon(params: GenerateIconParams) {
     seed,
   }
 
+  const runOptions: RunOptions<FalFluxInput> = {
+    input: falInput,
+  }
+
   const result = await fal.subscribe(modelConfig.model, {
-    input: falInput as never,
+    ...runOptions,
   })
 
   const resultSeed = getNumericSeed((result as { data?: { seed?: unknown } })?.data?.seed)

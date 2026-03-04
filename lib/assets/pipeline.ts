@@ -7,14 +7,15 @@ import { generateCodeSnippets } from './code-snippets'
 import { createZip } from './zip-packager'
 import { uploadToStorage } from '@/lib/supabase/storage'
 import { logger } from '@/lib/utils/logger'
-import { type IconSource } from '@/lib/utils/image'
-import type { Project, BrandProfile, StylePreset } from '@/types/database'
+import { resolveProjectIconSource } from './icon-source'
+import type { Project, BrandProfile, StylePreset, PipelineStage } from '@/types/database'
 
 interface PipelineInput {
   project: Project
   brandProfile: BrandProfile | null
   stylePreset: StylePreset
   userId: string
+  onStage?: (stage: PipelineStage) => void
 }
 
 /**
@@ -25,7 +26,7 @@ interface PipelineInput {
  * - 이미지 생성 작업 (favicons, OG images, app icons): 메모리 관리를 위해 순차 실행
  */
 export async function runAssetPipeline(input: PipelineInput) {
-  const { project, brandProfile, stylePreset, userId } = input
+  const { project, brandProfile, stylePreset, userId, onStage } = input
   const pipelineStartedAt = Date.now()
 
   logger.info('asset.pipeline.start', {
@@ -34,7 +35,8 @@ export async function runAssetPipeline(input: PipelineInput) {
     mobileTarget: project.mobile_target,
   })
 
-  const iconSource = await resolveIconSource(project)
+  onStage?.('icon_resolve')
+  const iconSource = await resolveProjectIconSource({ project, brandProfile, stylePreset })
 
   const results = {
     favicons: null as Record<string, Buffer> | null,
@@ -67,6 +69,7 @@ export async function runAssetPipeline(input: PipelineInput) {
 
   const imageTask = (async () => {
     if (isWeb) {
+      onStage?.('favicons')
       const faviconsStart = Date.now()
       results.favicons = await generateFavicons({ iconSource, project, brandProfile, stylePreset })
       logger.debug('asset.pipeline.favicons.done', {
@@ -74,6 +77,7 @@ export async function runAssetPipeline(input: PipelineInput) {
         files: Object.keys(results.favicons).length,
       })
 
+      onStage?.('og')
       const ogStart = Date.now()
       const ogResult = await generateOgImages({ project, brandProfile, stylePreset })
       results.ogImages = ogResult.files
@@ -85,6 +89,7 @@ export async function runAssetPipeline(input: PipelineInput) {
     }
 
     if (isMobile) {
+      onStage?.('app_icons')
       const appIconsStart = Date.now()
       results.appIcons = await generateAppIcons({
         iconSource,
@@ -98,6 +103,7 @@ export async function runAssetPipeline(input: PipelineInput) {
         files: Object.keys(results.appIcons).length,
       })
 
+      onStage?.('splash')
       const splashStart = Date.now()
       results.splashScreens = await generateSplashScreens({
         iconSource,
@@ -115,6 +121,7 @@ export async function runAssetPipeline(input: PipelineInput) {
 
   await Promise.all([...lightweightTasks, imageTask])
 
+  onStage?.('zip')
   const zipStart = Date.now()
   const zipBuffer = await createZip({ project, results })
   logger.debug('asset.pipeline.zip.done', {
@@ -122,6 +129,7 @@ export async function runAssetPipeline(input: PipelineInput) {
     bytes: zipBuffer.length,
   })
 
+  onStage?.('upload')
   const uploadStart = Date.now()
   const storageUrl = await uploadToStorage({
     userId,
@@ -137,41 +145,4 @@ export async function runAssetPipeline(input: PipelineInput) {
   })
 
   return { storageUrl, results, warnings }
-}
-
-async function resolveIconSource(project: Project): Promise<IconSource> {
-  if (project.icon_type === 'text') {
-    return { type: 'text', value: project.icon_value! }
-  }
-
-  if (project.icon_type === 'symbol') {
-    const fallback = project.icon_value?.charAt(0)?.toUpperCase() || 'S'
-    return { type: 'text', value: fallback }
-  }
-
-  if (!project.icon_value) {
-    throw new Error('AI-generated icon URL is missing (icon_value is null)')
-  }
-
-  let response: Response
-  try {
-    response = await fetch(project.icon_value)
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch AI-generated icon from ${project.icon_value}: ${error instanceof Error ? error.message : String(error)}`
-    )
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch AI-generated icon: HTTP ${response.status} from ${project.icon_value}${response.status === 403 ? ' (URL may have expired)' : ''}`
-    )
-  }
-
-  const buffer = Buffer.from(await response.arrayBuffer())
-  if (buffer.length === 0) {
-    throw new Error(`AI-generated icon from ${project.icon_value} returned empty data`)
-  }
-
-  return { type: 'image', buffer }
 }

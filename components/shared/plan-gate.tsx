@@ -5,6 +5,7 @@ import { Lock, Sparkles, ArrowRight, Zap } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AnalyticsEvents, trackEvent } from '@/lib/analytics/events'
 import type { Plan } from '@/types/database'
 import { PLAN_PRICING, type BillingInterval } from '@/lib/lemonsqueezy/config'
 
@@ -64,6 +65,10 @@ export function PlanGate({
 
   const handleUpgrade = async () => {
     setIsLoading(true)
+    const source = `plan_gate:${feature}`
+    trackEvent(AnalyticsEvents.UPGRADE_CLICK, { source })
+    trackEvent(AnalyticsEvents.CHECKOUT_START, { plan: 'pro', source })
+
     try {
       const response = await fetch('/api/lemonsqueezy/checkout', {
         method: 'POST',
