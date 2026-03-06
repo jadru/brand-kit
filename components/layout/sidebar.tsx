@@ -66,7 +66,7 @@ export function Sidebar({ className, plan = 'free' }: SidebarProps) {
                   <Crown className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-accent">Pro Plan</p>
+                  <p className="text-sm font-semibold text-accent">{tPlan('pro')}</p>
                   <p className="text-[10px] text-text-tertiary">{tPlan('unlimitedProjects')}</p>
                 </div>
               </div>
@@ -75,10 +75,10 @@ export function Sidebar({ className, plan = 'free' }: SidebarProps) {
             <Link href="/settings/billing" className="block" aria-label={tPlan('upgrade')}>
               <div className="group rounded-lg border border-dashed border-border bg-surface-tertiary/30 p-3 transition-all hover:border-accent/50 hover:bg-accent/5">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">Free Plan</p>
-                    <p className="text-[10px] text-text-tertiary">{tPlan('freeProjectLimit', { count: 3 })}</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-text-primary">{tPlan('free')}</p>
+                  <p className="text-[10px] text-text-tertiary">{tPlan('freeProjectLimit', { count: 3 })}</p>
+                </div>
                   <div className="flex items-center gap-1 text-xs font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
                     <Sparkles className="h-3 w-3" aria-hidden="true" />
                     {tPlan('upgrade')}

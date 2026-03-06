@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createProjectAssetSignedUrl, getProjectAssetStoragePath } from '@/lib/supabase/storage'
 import {
   handleApiError,
   UnauthorizedError,
@@ -23,22 +24,34 @@ export async function GET(
 
     const { data: projectData } = await supabase
       .from('projects')
-      .select('status, assets_zip_url')
+      .select('status, assets_zip_url, pipeline_stage')
       .eq('id', projectId)
       .eq('user_id', user.id)
       .single()
 
     const project = projectData as Pick<
       Project,
-      'status' | 'assets_zip_url'
+      'status' | 'assets_zip_url' | 'pipeline_stage'
     > | null
     if (!project) {
       throw new NotFoundError('프로젝트')
     }
 
+    let downloadUrl: string | null = null
+    if (project.assets_zip_url && project.status === 'completed') {
+      try {
+        const storagePath = getProjectAssetStoragePath(project.assets_zip_url)
+        downloadUrl = await createProjectAssetSignedUrl(storagePath)
+      } catch {
+        downloadUrl = null
+      }
+    }
+
     return Response.json({
       status: project.status,
-      url: project.assets_zip_url,
+      url: downloadUrl,
+      warnings: [],
+      pipelineStage: project.pipeline_stage,
     })
   } catch (error) {
     return handleApiError(error)

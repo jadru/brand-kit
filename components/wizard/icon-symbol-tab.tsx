@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import * as LucideIcons from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useWizardStore } from '@/store/wizard-store'
 import { symbolLibrary, categories } from '@/lib/assets/symbol-library'
 import { Select } from '@/components/ui/select'
@@ -21,6 +22,7 @@ function getLucideIcon(name: string): LucideIconComponent | null {
 export function IconSymbolTab() {
   const { icon, setIcon } = useWizardStore()
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const t = useTranslations('wizard.iconSymbol')
 
   const filteredSymbols = useMemo(() => {
     if (selectedCategory === 'all') return symbolLibrary
@@ -34,7 +36,7 @@ export function IconSymbolTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-text-secondary">
-        Choose a symbol from the library for your icon.
+        {t('description')}
       </p>
 
       <Select

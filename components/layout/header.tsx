@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils/cn'
+import { useTranslations } from 'next-intl'
 
 interface HeaderProps {
   showAuth?: boolean
@@ -12,6 +13,8 @@ interface HeaderProps {
 }
 
 export function Header({ showAuth = true, showUserMenu = false, className }: HeaderProps) {
+  const t = useTranslations('common')
+
   return (
     <header className={cn('sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur', className)}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -24,11 +27,18 @@ export function Header({ showAuth = true, showUserMenu = false, className }: Hea
         <nav className="hidden items-center space-x-6 md:flex">
           {showAuth && (
             <>
+              <Link href="/demo">
+                <Button variant="ghost" size="sm">
+                  {t('demo')}
+                </Button>
+              </Link>
               <Link href="/login">
-                <Button variant="ghost" size="sm">Log in</Button>
+                <Button variant="ghost" size="sm">
+                  {t('login')}
+                </Button>
               </Link>
               <Link href="/signup">
-                <Button size="sm">Sign up</Button>
+                <Button size="sm">{t('signup')}</Button>
               </Link>
             </>
           )}

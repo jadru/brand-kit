@@ -88,10 +88,6 @@ export function Footer() {
           <p className="font-mono text-xs text-text-tertiary">
             &copy; {new Date().getFullYear()} {tc('brandName')}. {t('copyright')}
           </p>
-          <div className="flex items-center gap-1" aria-label={t('status')}>
-            <div className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-            <span className="font-mono text-xs text-text-tertiary">{t('status')}</span>
-          </div>
         </div>
       </div>
     </footer>

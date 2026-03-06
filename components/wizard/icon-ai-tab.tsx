@@ -115,12 +115,12 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
       })
 
       if (!response.ok) {
-        let errorMessage = 'Generation failed'
+        let errorMessage = t('errors.generationFailed')
         try {
           const err = await response.json()
           errorMessage = err.message || err.error || errorMessage
         } catch {
-          errorMessage = `Server error: ${response.status} ${response.statusText}`
+          errorMessage = t('errors.serverError', { status: response.status, statusText: response.statusText })
         }
         throw new Error(errorMessage)
       }
@@ -129,7 +129,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
       setImages(data.images)
       setIconsUsed((prev) => prev + 1)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate icons')
+      setError(err instanceof Error ? err.message : t('errors.networkError'))
     } finally {
       setIsGenerating(false)
     }
@@ -153,7 +153,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
         <p className="text-sm text-text-secondary">
           {t('description')}
         </p>
-        <UsageMeter label="AI Icons" current={iconsUsed} limit={iconsLimit} showUpgrade />
+        <UsageMeter label={t('usageMeterLabel')} current={iconsUsed} limit={iconsLimit} showUpgrade />
       </div>
 
       <div className="space-y-2">
@@ -190,15 +190,15 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="iconQuality">Generation Quality</Label>
+        <Label htmlFor="iconQuality">{t('qualityLabel')}</Label>
         <select
           id="iconQuality"
           value={quality}
           onChange={(e) => setQuality(e.target.value as 'fast' | 'quality')}
           className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-text-primary"
         >
-          <option value="fast">Fast (Flux Schnell)</option>
-          <option value="quality">High Quality (Flux Dev)</option>
+          <option value="fast">{t('quality.fast')}</option>
+          <option value="quality">{t('quality.quality')}</option>
         </select>
       </div>
 
@@ -229,14 +229,14 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
               >
                 <Image
                   src={img.url}
-                  alt={`Generated icon option ${idx + 1}`}
+                  alt={t('generatedAlt', { index: idx + 1 })}
                   width={256}
                   height={256}
                   className="h-full w-full object-cover"
                 />
               </button>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-text-secondary">Seed {img.seed}</span>
+                <span className="text-xs text-text-secondary">{t('seed', { seed: img.seed })}</span>
                 {icon.iconType === 'ai_generated' && icon.iconValue === img.url && (
                   <Button
                     type="button"
@@ -246,7 +246,7 @@ export function IconAiTab({ plan, user, brandProfile, stylePreset }: IconAiTabPr
                     disabled={isGenerating || isExhausted}
                     className="h-7 px-2 text-xs"
                   >
-                    Similar
+                    {t('similar')}
                   </Button>
                 )}
               </div>

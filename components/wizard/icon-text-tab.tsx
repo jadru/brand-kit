@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react'
 import { useWizardStore } from '@/store/wizard-store'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export function IconTextTab() {
   const { icon, setIcon, project } = useWizardStore()
+  const t = useTranslations('wizard.iconText')
 
   const defaultLetter = project.name?.charAt(0)?.toUpperCase() || 'A'
   const currentValue = icon.iconType === 'text' ? (icon.iconValue || defaultLetter) : defaultLetter
@@ -25,12 +27,12 @@ export function IconTextTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-text-secondary">
-        Use one or two letters as your icon. The first letter of your project name is used by default.
+        {t('description')}
       </p>
 
       <div className="flex items-end gap-4">
         <div className="space-y-2">
-          <Label htmlFor="iconLetter">Letter(s)</Label>
+          <Label htmlFor="iconLetter">{t('label')}</Label>
           <Input
             id="iconLetter"
             value={currentValue}

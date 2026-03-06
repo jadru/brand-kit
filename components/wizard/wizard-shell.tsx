@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useWizardStore } from '@/store/wizard-store'
 import { createClient } from '@/lib/supabase/client'
 import { StepIndicator } from './step-indicator'
@@ -12,6 +13,7 @@ import { Step3Style } from './step-3-style'
 import { Step4Icon } from './step-4-icon'
 import { Step5Preview } from './step-5-preview'
 import { Button } from '@/components/ui/button'
+import { AnalyticsEvents, trackEvent } from '@/lib/analytics/events'
 import type { BrandProfile, StylePreset, User, Plan } from '@/types/database'
 
 interface WizardShellProps {
@@ -20,15 +22,6 @@ interface WizardShellProps {
   user: User
 }
 
-const STEPS = [
-  { label: 'Brand', description: 'Select brand profile' },
-  { label: 'Platform', description: 'Choose target platform' },
-  { label: 'Project', description: 'Enter project info' },
-  { label: 'Style', description: 'Pick style preset' },
-  { label: 'Icon', description: 'Choose icon symbol' },
-  { label: 'Done', description: 'Preview & download' },
-]
-
 export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellProps) {
   const store = useWizardStore()
   const { currentStep, setStep, nextStep, prevStep, canProceed, brand } = store
@@ -36,6 +29,18 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
   const [projectId, setProjectId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const tSteps = useTranslations('wizard.steps')
+  const tButtons = useTranslations('wizard.buttons')
+  const tErrors = useTranslations('wizard.errors')
+
+  const steps = [
+    { label: tSteps('brand.label'), description: tSteps('brand.description') },
+    { label: tSteps('platform.label'), description: tSteps('platform.description') },
+    { label: tSteps('project.label'), description: tSteps('project.description') },
+    { label: tSteps('style.label'), description: tSteps('style.description') },
+    { label: tSteps('icon.label'), description: tSteps('icon.description') },
+    { label: tSteps('preview.label'), description: tSteps('preview.description') },
+  ]
 
   useEffect(() => {
     containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -57,6 +62,7 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
   async function handleFinish() {
     setIsSaving(true)
     setSaveError(null)
+    trackEvent(AnalyticsEvents.PROJECT_CREATE_START, {})
 
     try {
       const supabase = createClient()
@@ -84,7 +90,7 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
         .single()
 
       if (error || !project) {
-        setSaveError('프로젝트 저장에 실패했습니다.')
+        setSaveError(tErrors('projectSaveFailed'))
         setIsSaving(false)
         return
       }
@@ -95,11 +101,15 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
         p_field_name: 'projects_used_this_month',
       })
 
+      trackEvent(AnalyticsEvents.PROJECT_CREATE_COMPLETE, {
+        platform: store.platform.platform,
+      })
+
       setProjectId(project.id)
       store.reset()
       nextStep()
     } catch {
-      setSaveError('프로젝트 저장 중 오류가 발생했습니다.')
+      setSaveError(tErrors('projectSaveUnknownError'))
     } finally {
       setIsSaving(false)
     }
@@ -149,7 +159,7 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
   return (
     <div ref={containerRef} className="space-y-8">
       <StepIndicator
-        steps={STEPS}
+        steps={steps}
         currentStep={currentStep}
         onStepClick={handleStepClick}
       />
@@ -169,14 +179,14 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
             onClick={prevStep}
             disabled={currentStep === 0 || isSaving}
           >
-            Previous
+            {tButtons('previous')}
           </Button>
           <Button
             onClick={handleNext}
             disabled={!canProceed(currentStep) || isSaving}
           >
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {currentStep === 4 ? 'Generate Assets' : 'Next'}
+            {currentStep === 4 ? tButtons('generateAssets') : tButtons('next')}
           </Button>
         </div>
       )}

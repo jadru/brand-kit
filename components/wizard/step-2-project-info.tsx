@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { UsageMeter } from '@/components/shared/usage-meter'
+import { useTranslations } from 'next-intl'
 import type { BrandProfile, User } from '@/types/database'
 import type { HeadlineResponse } from '@/types/wizard'
 
@@ -26,6 +27,8 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
     const limits = { free: 10, pro: Infinity }
     return limits[user.plan] ?? 10
   })
+
+  const t = useTranslations('wizard.projectInfo')
 
   const isExhausted = headlinesUsed >= headlinesLimit
 
@@ -51,18 +54,18 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
       if (!response.ok) {
         const err = await response.json()
         if (err.error === 'USAGE_LIMIT_EXCEEDED') {
-          setAiError('AI headline usage limit exceeded. Upgrade to Pro for unlimited generation.')
+          setAiError(t('errors.usageLimitExceeded'))
           setHeadlinesUsed(err.current)
           return
         }
-        throw new Error(err.message || 'Generation failed')
+        throw new Error(err.message || t('errors.generationFailed'))
       }
 
       const data: HeadlineResponse = await response.json()
       setAiResult(data)
       setHeadlinesUsed((prev) => prev + 1)
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : 'Failed to generate headlines')
+      setAiError(err instanceof Error ? err.message : t('errors.generationFailed'))
     } finally {
       setIsGenerating(false)
     }
@@ -83,32 +86,30 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary">Project Info</h2>
-        <p className="text-sm text-text-secondary">
-          Name your project and optionally generate AI copy.
-        </p>
+        <h2 className="text-lg font-semibold text-text-primary">{t('title')}</h2>
+        <p className="text-sm text-text-secondary">{t('description')}</p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="projectName" required>Project Name</Label>
+          <Label htmlFor="projectName" required>{t('projectName')}</Label>
           <Input
             id="projectName"
             value={project.name}
             onChange={(e) => setProject({ name: e.target.value })}
-            placeholder="My Awesome App"
+            placeholder={t('projectNamePlaceholder')}
             maxLength={50}
           />
           <p className="text-xs text-text-tertiary">{project.name.length}/50</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Short Description</Label>
+          <Label htmlFor="description">{t('descriptionLabel')}</Label>
           <Input
             id="description"
             value={project.description}
             onChange={(e) => setProject({ description: e.target.value })}
-            placeholder="A brief description of your project"
+            placeholder={t('descriptionPlaceholder')}
             maxLength={200}
           />
           <p className="text-xs text-text-tertiary">{project.description.length}/200</p>
@@ -117,9 +118,9 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>AI SEO Copy</Label>
+          <Label>{t('copyTitle')}</Label>
           <UsageMeter
-            label="Headlines"
+            label={t('headlinesLabel')}
             current={headlinesUsed}
             limit={headlinesLimit}
             showUpgrade
@@ -133,7 +134,7 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
           disabled={!project.name.trim() || isExhausted}
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          {aiResult ? 'Regenerate' : 'Generate AI Headlines'}
+          {aiResult ? t('regenerate') : t('generate')}
         </Button>
 
         {aiError && <p className="text-sm text-error">{aiError}</p>}
@@ -142,19 +143,19 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
           <Card>
             <CardContent className="space-y-3 pt-4">
               <div>
-                <p className="text-xs font-medium text-text-tertiary">Headline</p>
+                <p className="text-xs font-medium text-text-tertiary">{t('headline')}</p>
                 <p className="text-sm text-text-primary">{aiResult.headline}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-text-tertiary">Tagline</p>
+                <p className="text-xs font-medium text-text-tertiary">{t('tagline')}</p>
                 <p className="text-sm text-text-primary">{aiResult.tagline}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-text-tertiary">OG Description</p>
+                <p className="text-xs font-medium text-text-tertiary">{t('ogDescription')}</p>
                 <p className="text-sm text-text-primary">{aiResult.ogDescription}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-text-tertiary">Short Slogan</p>
+                <p className="text-xs font-medium text-text-tertiary">{t('shortSlogan')}</p>
                 <p className="text-sm text-text-primary">{aiResult.shortSlogan}</p>
               </div>
 
@@ -165,7 +166,7 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
                   disabled={hasCopyApplied}
                 >
                   <Check className="mr-1 h-3.5 w-3.5" />
-                  {hasCopyApplied ? 'Applied' : 'Use this copy'}
+                  {hasCopyApplied ? t('applied') : t('useThisCopy')}
                 </Button>
                 <Button
                   size="sm"
@@ -175,7 +176,7 @@ export function Step2ProjectInfo({ user, brandProfile }: Step2ProjectInfoProps) 
                   disabled={isExhausted}
                 >
                   <RefreshCw className="mr-1 h-3.5 w-3.5" />
-                  Regenerate
+                  {t('regenerate')}
                 </Button>
               </div>
             </CardContent>

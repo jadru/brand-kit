@@ -20,6 +20,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
     ai_og_description: null,
     ai_short_slogan: null,
     assets_zip_url: null,
+    pipeline_stage: null,
     status: 'draft',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

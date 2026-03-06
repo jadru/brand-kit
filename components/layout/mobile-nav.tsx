@@ -3,15 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { Menu, X, LayoutDashboard, FolderOpen, Palette, Settings, Sparkles, Crown } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils/cn'
 import type { Plan } from '@/types/database'
-
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/projects', label: 'Projects', icon: FolderOpen },
-  { href: '/brand-profiles', label: 'Brand Profiles', icon: Palette },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
 
 interface MobileNavProps {
   plan?: Plan
@@ -19,6 +13,8 @@ interface MobileNavProps {
 
 export function MobileNav({ plan = 'free' }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const tNav = useTranslations('dashboard.nav')
+  const tPlan = useTranslations('dashboard.plan')
   const pathname = usePathname()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const triggerButtonRef = useRef<HTMLButtonElement>(null)
@@ -62,7 +58,7 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
       <button
         ref={triggerButtonRef}
         onClick={() => setIsOpen(true)}
-        aria-label="메뉴 열기"
+        aria-label={tNav('menuOpen')}
         aria-expanded={isOpen}
         aria-controls="mobile-nav-drawer"
         className="touch-target flex items-center justify-center rounded-lg p-2.5 text-text-secondary transition-colors hover:bg-surface-tertiary hover:text-text-primary"
@@ -79,14 +75,19 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
               <button
                 ref={closeButtonRef}
                 onClick={close}
-                aria-label="메뉴 닫기"
+                aria-label={tNav('menuClose')}
                 className="touch-target flex items-center justify-center rounded-lg p-2.5 text-text-tertiary transition-colors hover:bg-surface-tertiary hover:text-text-primary"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             <nav className="flex-1 space-y-1 p-4">
-              {navItems.map((item) => {
+              {[
+                { href: '/dashboard', label: tNav('dashboard'), icon: LayoutDashboard },
+                { href: '/projects', label: tNav('projects'), icon: FolderOpen },
+                { href: '/brand-profiles', label: tNav('brandProfiles'), icon: Palette },
+                { href: '/settings', label: tNav('settings'), icon: Settings },
+              ].map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                 return (
                   <Link
@@ -108,28 +109,30 @@ export function MobileNav({ plan = 'free' }: MobileNavProps) {
             </nav>
             <div className="border-t border-border p-4">
               {plan === 'pro' ? (
-                <div className="rounded-lg bg-accent/10 p-3" role="status" aria-label="Pro Plan 사용 중">
+                <div className="rounded-lg bg-accent/10 p-3" role="status" aria-label={tPlan('proActive')}>
                   <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20">
                       <Crown className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-accent">Pro Plan</p>
-                      <p className="text-[10px] text-text-tertiary">무제한 프로젝트</p>
+                      <p className="text-sm font-semibold text-accent">{tPlan('pro')}</p>
+                      <p className="text-[10px] text-text-tertiary">{tPlan('unlimitedProjects')}</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <Link href="/settings/billing" onClick={close} aria-label="Pro Plan으로 업그레이드">
+                <Link href="/settings/billing" onClick={close} aria-label={tPlan('upgrade')}>
                   <div className="group rounded-lg border border-dashed border-border bg-surface-tertiary/30 p-3 transition-all hover:border-accent/50 hover:bg-accent/5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-text-primary">Free Plan</p>
-                        <p className="text-[10px] text-text-tertiary">월 3개 프로젝트</p>
+                        <p className="text-sm font-medium text-text-primary">{tPlan('free')}</p>
+                        <p className="text-[10px] text-text-tertiary">
+                          {tPlan('freeProjectLimit', { count: 3 })}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1 text-xs font-medium text-accent">
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
-                        업그레이드
+                        {tPlan('upgrade')}
                       </div>
                     </div>
                   </div>

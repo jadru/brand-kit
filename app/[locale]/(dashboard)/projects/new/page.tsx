@@ -2,10 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { WizardShell } from '@/components/wizard/wizard-shell'
 import type { User } from '@/types/database'
+import { getTranslations } from 'next-intl/server'
 
-export default async function NewProjectPage() {
+export default async function NewProjectPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const t = await getTranslations({ locale, namespace: 'projects' })
 
   if (!user) redirect('/login')
 
@@ -20,8 +29,8 @@ export default async function NewProjectPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">New Project</h1>
-        <p className="text-sm text-text-secondary">Create brand assets in a few steps.</p>
+        <h1 className="text-2xl font-bold text-text-primary">{t('newProject')}</h1>
+        <p className="text-sm text-text-secondary">{t('newDescription')}</p>
       </div>
 
       <WizardShell

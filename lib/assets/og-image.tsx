@@ -2,6 +2,7 @@ import satori from 'satori'
 import sharp from 'sharp'
 import { OG_IMAGE_SIZES } from './constants'
 import { resolveOgStyles, type ResolvedOgStyles } from './style-resolver'
+import { resolveProjectIconSource } from './icon-source'
 import { generateOgBackground } from '@/lib/ai/fal'
 import { generateWithRetry } from '@/lib/utils/errors'
 import { validateImage } from '@/lib/utils/image'
@@ -17,7 +18,7 @@ const FONT_URLS: Record<string, Record<number, string>> = {
     400: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
     500: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZhrib2Bg-4.ttf',
     600: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuDyYMZhrib2Bg-4.ttf',
-    700: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
+    700: 'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf',
   },
   Geist: {
     700: 'https://fonts.gstatic.com/s/geist/v3/gyBhhwUxId8mMGZKNImSPbcZm7h9NNQ.ttf',
@@ -69,6 +70,70 @@ interface OgImageResult {
   warnings: string[]
 }
 
+interface OgIconRender {
+  mode: 'text' | 'image'
+  value: string
+}
+
+function textIcon(value: string): OgIconRender {
+  return {
+    mode: 'text',
+    value: value.trim().charAt(0).toUpperCase() || 'S',
+  }
+}
+
+function iconToRenderValue(iconSource: Awaited<ReturnType<typeof resolveProjectIconSource>>): OgIconRender {
+  if (iconSource.type === 'text') {
+    return textIcon(iconSource.value || 'S')
+  }
+
+  if (!iconSource.buffer) {
+    return textIcon('S')
+  }
+
+  const mimeType = iconSource.type === 'svg' ? 'image/svg+xml' : 'image/png'
+  return {
+    mode: 'image',
+    value: `data:${mimeType};base64,${iconSource.buffer.toString('base64')}`,
+  }
+}
+
+function renderIconElement(icon: OgIconRender, fallbackColor: string, size: number) {
+  if (icon.mode === 'text') {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          width: `${size}px`,
+          height: `${size}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: `${Math.max(size * 0.58, 28)}px`,
+          fontWeight: 700,
+          color: '#FFFFFF',
+          fontFamily: 'Inter',
+          backgroundColor: fallbackColor,
+          borderRadius: `${size === 120 ? '28px' : '20px'}`,
+        },
+      },
+      icon.value
+    )
+  }
+
+  return React.createElement('img', {
+    src: icon.value,
+    width: size,
+    height: size,
+    alt: 'Project icon',
+    style: {
+      borderRadius: size === 120 ? '28px' : '20px',
+      objectFit: 'contain',
+      backgroundColor: fallbackColor,
+    },
+  })
+}
+
 export async function generateOgImages(input: OgImageInput): Promise<OgImageResult> {
   const { project, brandProfile, stylePreset } = input
   const results: Record<string, Buffer> = {}
@@ -87,6 +152,15 @@ export async function generateOgImages(input: OgImageInput): Promise<OgImageResu
   const twitterWidth = OG_IMAGE_SIZES.twitter.width
   const twitterHeight = OG_IMAGE_SIZES.twitter.height
 
+  // OG icon resolution (텍스트/심볼/AI 이미지)
+  let iconForRender = textIcon(project.name)
+  try {
+    const iconSource = await resolveProjectIconSource({ project, brandProfile, stylePreset })
+    iconForRender = iconToRenderValue(iconSource)
+  } catch {
+    warnings.push('icon_fallback')
+  }
+
   // AI 배경 생성 시도 (og_ai_style_modifier가 있는 경우)
   const hasAiModifier = !!(stylePreset.og_ai_style_modifier || stylePreset.ai_style_modifier)
   let aiBgBuffer: Buffer | null = null
@@ -95,7 +169,9 @@ export async function generateOgImages(input: OgImageInput): Promise<OgImageResu
     try {
       aiBgBuffer = await generateWithRetry(
         () => generateOgBackground({
-          project, brandProfile, stylePreset,
+          project,
+          brandProfile,
+          stylePreset,
           width: ogWidth, height: ogHeight,
         }),
         2,
@@ -113,7 +189,7 @@ export async function generateOgImages(input: OgImageInput): Promise<OgImageResu
 
     // OG Image (1200x630)
     const ogTextSvg = await satori(
-      renderOgTemplate(project, textOverlayStyles),
+      renderOgTemplate(project, textOverlayStyles, iconForRender),
       { width: ogWidth, height: ogHeight, fonts }
     )
     const ogTextPng = await sharp(Buffer.from(ogTextSvg)).png(imagePngOptions).toBuffer()
@@ -129,7 +205,7 @@ export async function generateOgImages(input: OgImageInput): Promise<OgImageResu
       .png(imagePngOptions)
       .toBuffer()
     const twitterTextSvg = await satori(
-      renderOgTemplate(project, textOverlayStyles),
+      renderOgTemplate(project, textOverlayStyles, iconForRender),
       { width: twitterWidth, height: twitterHeight, fonts }
     )
     const twitterTextPng = await sharp(Buffer.from(twitterTextSvg)).png(imagePngOptions).toBuffer()
@@ -140,14 +216,14 @@ export async function generateOgImages(input: OgImageInput): Promise<OgImageResu
   } else {
     // 폴백: 기존 CSS 그라디언트 방식
     const ogSvg = await satori(
-      renderOgTemplate(project, resolved),
+      renderOgTemplate(project, resolved, iconForRender),
       { width: ogWidth, height: ogHeight, fonts }
     )
     results['og.png'] = await sharp(Buffer.from(ogSvg)).png(imagePngOptions).toBuffer()
     await validateImage(results['og.png'], ogWidth, ogHeight, 'og.png')
 
     const twitterSvg = await satori(
-      renderOgTemplate(project, resolved),
+      renderOgTemplate(project, resolved, iconForRender),
       { width: twitterWidth, height: twitterHeight, fonts }
     )
     results['twitter-card.png'] = await sharp(Buffer.from(twitterSvg)).png(imagePngOptions).toBuffer()
@@ -185,14 +261,14 @@ function getTitleFontSize(title: string, variant: 'regular' | 'large'): string {
 // Template Renderer (dispatch by layout)
 // ========================================
 
-function renderOgTemplate(project: Project, style: ResolvedOgStyles) {
+function renderOgTemplate(project: Project, style: ResolvedOgStyles, icon: OgIconRender) {
   switch (style.layout) {
     case 'left-aligned':
-      return renderLeftAligned(project, style)
+      return renderLeftAligned(project, style, icon)
     case 'centered-large-text':
       return renderCenteredLargeText(project, style)
     case 'grid-balanced':
-      return renderGridBalanced(project, style)
+      return renderGridBalanced(project, style, icon)
     case 'centered':
     default:
       return renderCentered(project, style)
@@ -211,6 +287,7 @@ function renderCentered(project: Project, style: ResolvedOgStyles) {
     style: {
       display: 'flex',
       flexDirection: 'column' as const,
+      justifyContent: 'center',
       alignItems: 'center',
       padding: style.glassOverlay ? '48px 64px' : '0',
       ...(style.glassOverlay ? {
@@ -272,7 +349,7 @@ function renderCentered(project: Project, style: ResolvedOgStyles) {
 // Layout: Left-Aligned
 // ========================================
 
-function renderLeftAligned(project: Project, style: ResolvedOgStyles) {
+function renderLeftAligned(project: Project, style: ResolvedOgStyles, icon: OgIconRender) {
   const subtitle = getSubtitle(project)
   const titleFontSize = getTitleFontSize(project.name, 'regular')
 
@@ -310,7 +387,8 @@ function renderLeftAligned(project: Project, style: ResolvedOgStyles) {
     }, subtitle) : null,
   )
 
-  const accentElement = style.accentColor ? React.createElement('div', {
+  const accentColor = style.accentColor || style.textColor
+  const accentElement = React.createElement('div', {
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -318,20 +396,11 @@ function renderLeftAligned(project: Project, style: ResolvedOgStyles) {
       width: '120px',
       height: '120px',
       borderRadius: '24px',
-      backgroundColor: style.accentColor,
       marginLeft: '60px',
       flexShrink: 0,
+      backgroundColor: accentColor,
     },
-  },
-    React.createElement('div', {
-      style: {
-        fontSize: '48px',
-        fontWeight: 700,
-        color: '#FFFFFF',
-        fontFamily: style.fontFamily,
-      },
-    }, project.name.charAt(0).toUpperCase()),
-  ) : null
+  }, renderIconElement(icon, accentColor, 120))
 
   return React.createElement('div', {
     style: {
@@ -385,7 +454,7 @@ function renderCenteredLargeText(project: Project, style: ResolvedOgStyles) {
 // Layout: Grid Balanced
 // ========================================
 
-function renderGridBalanced(project: Project, style: ResolvedOgStyles) {
+function renderGridBalanced(project: Project, style: ResolvedOgStyles, icon: OgIconRender) {
   const subtitle = getSubtitle(project)
 
   const leftColumn = React.createElement('div', {
@@ -422,37 +491,34 @@ function renderGridBalanced(project: Project, style: ResolvedOgStyles) {
     }, subtitle) : null,
   )
 
-  const rightColumn = React.createElement('div', {
-    style: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '320px',
-      flexShrink: 0,
-      gap: '12px',
-    },
-  },
-    React.createElement('div', {
+  const rightColumn = React.createElement(
+    'div',
+    {
       style: {
         display: 'flex',
-        width: '200px',
-        height: '200px',
-        borderRadius: '20px',
-        backgroundColor: style.accentColor || '#E5E7EB',
+        flexDirection: 'column' as const,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        width: '320px',
+        flexShrink: 0,
+        gap: '12px',
       },
     },
-      React.createElement('div', {
+    React.createElement(
+      'div',
+      {
         style: {
-          fontSize: '72px',
-          fontWeight: 700,
-          color: '#FFFFFF',
-          fontFamily: style.fontFamily,
+          display: 'flex',
+          width: '200px',
+          height: '200px',
+          borderRadius: '20px',
+          backgroundColor: style.accentColor || '#E5E7EB',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         },
-      }, project.name.charAt(0).toUpperCase()),
+      },
+      renderIconElement(icon, style.accentColor || '#E5E7EB', 140),
     ),
   )
 

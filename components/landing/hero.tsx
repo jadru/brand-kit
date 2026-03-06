@@ -38,6 +38,12 @@ export function Hero() {
             >
               {tc('signup')}
             </Link>
+            <Link
+              href="/demo"
+              className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:border-white/40 hover:text-white"
+            >
+              {t('ctaDemo')}
+            </Link>
           </div>
         </nav>
 
@@ -76,6 +82,13 @@ export function Hero() {
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
+                href="/demo"
+                className="link-underline inline-flex h-12 items-center justify-center rounded-full border border-white/15 px-8 text-sm font-medium text-white/70 transition-all hover:border-white/25 hover:text-white"
+                data-analytics="hero_cta_demo"
+              >
+                {t('ctaDemo')}
+              </Link>
+              <Link
                 href="#features"
                 className="link-underline inline-flex h-12 items-center justify-center rounded-full border border-white/15 px-8 text-sm font-medium text-white/70 transition-all hover:border-white/25 hover:text-white"
                 data-analytics="hero_cta_secondary"
@@ -83,7 +96,6 @@ export function Hero() {
                 {t('ctaSecondary')}
               </Link>
             </div>
-
             {/* Trust indicators */}
             <div className="animate-fade-in-up delay-4 mt-6 flex items-center gap-4 text-xs text-white/40">
               <div className="flex items-center gap-1.5">
@@ -97,26 +109,6 @@ export function Hero() {
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
                 <span>{t('trustFreePlan')}</span>
-              </div>
-            </div>
-
-            {/* Social Proof Stats */}
-            <div className="animate-fade-in-up delay-5 mt-12 flex flex-wrap gap-8 pb-16 sm:mt-16 sm:gap-12 lg:pb-0">
-              <div>
-                <div className="font-display text-xl font-bold sm:text-2xl">2,500+</div>
-                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.users')}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold sm:text-2xl">15K+</div>
-                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.assetsGenerated')}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold sm:text-2xl">12+</div>
-                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.assetTypes')}</div>
-              </div>
-              <div>
-                <div className="font-display text-xl font-bold sm:text-2xl">&lt;60s</div>
-                <div className="mt-1 font-mono text-[10px] tracking-wider text-white/40 sm:text-[11px]">{t('stats.generation')}</div>
               </div>
             </div>
           </div>

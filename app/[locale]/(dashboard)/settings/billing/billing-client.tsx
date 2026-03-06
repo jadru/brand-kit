@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlanCard } from '@/components/billing/plan-card'
 import { UsageOverview } from '@/components/billing/usage-overview'
+import { AnalyticsEvents, trackEvent } from '@/lib/analytics/events'
 import type { User, Plan } from '@/types/database'
 
 interface BillingClientProps {
@@ -15,11 +17,15 @@ interface BillingClientProps {
 export function BillingClient({ user }: BillingClientProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isManaging, setIsManaging] = useState(false)
+  const tBilling = useTranslations('settings.billing')
   const plan = user.plan as Plan
+  const currentPlanLabel = plan === 'pro' ? tBilling('planPro') : tBilling('planFree')
 
   async function handleUpgrade() {
     if (isLoading) return
     setIsLoading(true)
+    trackEvent(AnalyticsEvents.UPGRADE_CLICK, { source: 'settings_billing' })
+    trackEvent(AnalyticsEvents.CHECKOUT_START, { plan: 'pro', source: 'settings_billing' })
     try {
       const res = await fetch('/api/lemonsqueezy/checkout', { method: 'POST' })
       const data = await res.json()
@@ -48,18 +54,16 @@ export function BillingClient({ user }: BillingClientProps) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">빌링</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          플랜 관리 및 사용량을 확인하세요.
-        </p>
+        <h1 className="text-2xl font-bold text-text-primary">{tBilling('title')}</h1>
+        <p className="mt-1 text-sm text-text-secondary">{tBilling('subtitle')}</p>
       </div>
 
       <div className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-text-primary">현재 플랜:</span>
+            <span className="text-sm font-medium text-text-primary">{tBilling('currentPlan')}</span>
             <Badge variant={plan === 'pro' ? 'pro' : 'secondary'}>
-              {plan === 'pro' ? 'Pro' : 'Free'}
+              {currentPlanLabel}
             </Badge>
           </div>
         </div>
@@ -72,7 +76,7 @@ export function BillingClient({ user }: BillingClientProps) {
             disabled={isManaging}
           >
             <ExternalLink className="mr-2 h-4 w-4" />
-            구독 관리
+            {tBilling('manage')}
           </Button>
         )}
       </div>
@@ -80,7 +84,7 @@ export function BillingClient({ user }: BillingClientProps) {
       <UsageOverview user={user} />
 
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-text-primary">플랜 비교</h2>
+        <h2 className="mb-4 text-lg font-semibold text-text-primary">{tBilling('planComparison')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <PlanCard
             plan="free"

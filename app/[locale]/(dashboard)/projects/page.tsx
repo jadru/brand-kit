@@ -1,9 +1,11 @@
 import { Link } from '@/i18n/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
+import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Plus, ArrowRight, Sparkles } from 'lucide-react'
 import type { ProjectStatus } from '@/types/database'
 
@@ -14,19 +16,65 @@ const STATUS_VARIANT: Record<ProjectStatus, 'default' | 'success' | 'warning' | 
   failed: 'error',
 }
 
-export default async function ProjectsPage({ params }: { params: Promise<{ locale: string }> }) {
+const STATUSES: ProjectStatus[] = ['draft', 'generating', 'completed', 'failed']
+
+export default async function ProjectsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>
+  searchParams:
+    | Promise<{
+        q?: string | string[]
+        status?: string | string[]
+      }>
+    | {
+        q?: string | string[]
+        status?: string | string[]
+      }
+}) {
   const { locale } = await params
+  const resolvedSearchParams = await searchParams
+  const { q: rawQuery = '', status: rawStatus = 'all' } = resolvedSearchParams
+  const query = typeof rawQuery === 'string' ? rawQuery.trim() : ''
+  const selectedStatus = typeof rawStatus === 'string'
+    ? rawStatus
+    : Array.isArray(rawStatus)
+      ? rawStatus[0] ?? 'all'
+      : 'all'
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const t = await getTranslations({ locale, namespace: 'projects' })
+  if (!user) redirect('/login')
 
-  const { data: projects } = await supabase
+  let projectQuery = supabase
     .from('projects')
     .select('*, brand_profiles(primary_color)')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
+  if (query) {
+    projectQuery = projectQuery.ilike('name', `%${query}%`)
+  }
+
+  if (selectedStatus !== 'all' && STATUSES.includes(selectedStatus as ProjectStatus)) {
+    projectQuery = projectQuery.eq('status', selectedStatus)
+  }
+
+  const { data: projects } = await projectQuery
+
+  const isStatusFiltered = selectedStatus !== 'all' && STATUSES.includes(selectedStatus as ProjectStatus)
+  const hasActiveFilter = Boolean(query) || isStatusFiltered
+
   const dateLocale = locale === 'ko' ? 'ko-KR' : 'en-US'
+  const statusKeyMap: Record<ProjectStatus | 'all', string> = {
+    all: 'statusAll',
+    draft: 'draft',
+    generating: 'generating',
+    completed: 'completed',
+    failed: 'failed',
+  }
 
   return (
     <div className="space-y-8">
@@ -47,6 +95,40 @@ export default async function ProjectsPage({ params }: { params: Promise<{ local
         </Link>
       </div>
 
+      <form method="get" className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-end">
+        <label className="flex-1 space-y-2">
+          <span className="text-xs font-medium text-text-secondary">{t('filters.search')}</span>
+          <Input
+            name="q"
+            defaultValue={query}
+            placeholder={t('filters.searchPlaceholder')}
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs font-medium text-text-secondary">{t('filters.status')}</span>
+          <select
+            name="status"
+            defaultValue={selectedStatus}
+            className="h-10 w-full min-w-44 rounded-md border border-border bg-surface-secondary px-3 text-sm text-text-primary"
+          >
+            <option value="all">{t('filters.' + statusKeyMap.all)}</option>
+            {STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {t(`status.${status}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex gap-2">
+          <Button type="submit">{t('filters.apply')}</Button>
+          <Link href="/projects">
+            <Button type="button" variant="outline">
+              {t('filters.reset')}
+            </Button>
+          </Link>
+        </div>
+      </form>
+
       {!projects || projects.length === 0 ? (
         <Card className="overflow-hidden border-dashed">
           <CardContent className="relative flex flex-col items-center justify-center py-16">
@@ -62,7 +144,7 @@ export default async function ProjectsPage({ params }: { params: Promise<{ local
                 {t('empty.title')}
               </h3>
               <p className="mx-auto mt-2 max-w-sm text-center text-sm text-text-secondary">
-                {t('empty.description')}
+                {hasActiveFilter ? t('filters.noResults') : t('empty.description')}
               </p>
               <Link href="/projects/new" className="mt-6 flex justify-center">
                 <Button className="btn-glow">

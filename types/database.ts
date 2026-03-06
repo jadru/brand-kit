@@ -7,6 +7,7 @@ export type Platform = 'web' | 'mobile' | 'all'
 export type MobileTarget = 'android' | 'ios' | 'both'
 export type IconType = 'text' | 'symbol' | 'ai_generated'
 export type ProjectStatus = 'draft' | 'generating' | 'completed' | 'failed'
+export type PipelineStage = 'icon_resolve' | 'favicons' | 'og' | 'app_icons' | 'splash' | 'zip' | 'upload'
 
 export interface User {
   id: string
@@ -78,6 +79,7 @@ export interface Project {
   ai_og_description: string | null
   ai_short_slogan: string | null
   assets_zip_url: string | null
+  pipeline_stage: PipelineStage | null
   status: ProjectStatus
   created_at: string
   updated_at: string
@@ -143,6 +145,7 @@ export interface ProjectInsert {
   ai_og_description?: string | null
   ai_short_slogan?: string | null
   assets_zip_url?: string | null
+  pipeline_stage?: PipelineStage | null
   status?: ProjectStatus
 }
 
@@ -161,6 +164,7 @@ export interface ProjectUpdate {
   ai_og_description?: string | null
   ai_short_slogan?: string | null
   assets_zip_url?: string | null
+  pipeline_stage?: PipelineStage | null
   status?: ProjectStatus
 }
 

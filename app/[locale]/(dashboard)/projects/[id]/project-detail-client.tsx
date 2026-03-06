@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, RefreshCw, Loader2, Copy } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useRouter } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ import { WebPreview } from '@/components/preview/web-preview'
 import { MobilePreview } from '@/components/preview/mobile-preview'
 import { CodePreview } from '@/components/preview/code-preview'
 import { useAssetGeneration } from '@/hooks/use-asset-generation'
+import { AnalyticsEvents, trackEvent } from '@/lib/analytics/events'
 import { duplicateProject } from '../actions'
 import type { Project, ProjectStatus } from '@/types/database'
 
@@ -21,38 +23,34 @@ interface ProjectDetailClientProps {
   primaryColor: string
 }
 
-const STATUS_BADGE: Record<ProjectStatus, { variant: 'default' | 'success' | 'warning' | 'error'; label: string }> = {
-  draft: { variant: 'default', label: '초안' },
-  generating: { variant: 'warning', label: '생성 중' },
-  completed: { variant: 'success', label: '완료' },
-  failed: { variant: 'error', label: '실패' },
+const STATUS_BADGE: Record<ProjectStatus, { variant: 'default' | 'success' | 'warning' | 'error' }> = {
+  draft: { variant: 'default' },
+  generating: { variant: 'warning' },
+  completed: { variant: 'success' },
+  failed: { variant: 'error' },
 }
 
 export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClientProps) {
   const router = useRouter()
+  const t = useTranslations('projects')
+  const tPlatform = useTranslations('projects.platform')
   const [activeTab, setActiveTab] = useState('web')
-  const [isRegenerating, setIsRegenerating] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
-  const { status: genStatus, progress } = useAssetGeneration({
-    projectId: isRegenerating ? project.id : null,
-    enabled: isRegenerating,
+  const { status: genStatus, progress, startGeneration } = useAssetGeneration({
+    projectId: project.id,
+    enabled: false,
   })
 
   const showMobile = project.platform === 'mobile' || project.platform === 'all'
   const showWeb = project.platform === 'web' || project.platform === 'all'
 
-  const isGenerating = isRegenerating && (genStatus === 'generating' || genStatus === 'idle')
-  const currentStatus = isRegenerating ? genStatus : project.status
+  const isGenerating = genStatus === 'generating'
+  const currentStatus = genStatus === 'idle' ? project.status : genStatus
   const badge = STATUS_BADGE[currentStatus as ProjectStatus] || STATUS_BADGE.draft
 
   async function handleRegenerate() {
-    setIsRegenerating(true)
-
-    await fetch(`/api/assets/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId: project.id }),
-    })
+    await startGeneration()
+    router.refresh()
   }
 
   async function handleDuplicate() {
@@ -60,19 +58,20 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
     try {
       const result = await duplicateProject(project.id)
       if (result.success && result.newProjectId) {
-        toast.success('프로젝트가 복제되었습니다')
+        toast.success(t('detail.copied', { defaultValue: '복제되었습니다' }))
         router.push(`/projects/${result.newProjectId}`)
       } else {
-        toast.error(result.error || '복제에 실패했습니다')
+        toast.error(result.error || t('detail.duplicateFailed'))
       }
     } catch {
-      toast.error('복제에 실패했습니다')
+      toast.error(t('detail.duplicateFailed'))
     } finally {
       setIsDuplicating(false)
     }
   }
 
   async function handleDownload() {
+    trackEvent(AnalyticsEvents.ASSET_DOWNLOAD, { project_id: project.id, format: 'zip' })
     const link = document.createElement('a')
     link.href = `/api/assets/download/${project.id}`
     link.download = `${project.name}-assets.zip`
@@ -95,8 +94,8 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
       {/* Breadcrumb Navigation */}
       <Breadcrumb
         items={[
-          { label: 'Projects', href: '/projects' },
-          { label: project.name }
+          { label: t('title'), href: '/projects' },
+          { label: project.name },
         ]}
       />
 
@@ -104,12 +103,12 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-text-primary">{project.name}</h1>
-            <Badge variant={badge.variant}>{badge.label}</Badge>
+            <Badge variant={badge.variant}>{t(`status.${project.status}` as const)}</Badge>
           </div>
           <p className="mt-1 text-sm text-text-secondary">
-            {project.platform === 'web' ? 'Web' : project.platform === 'mobile' ? 'Mobile' : 'Web + Mobile'}
+            {project.platform === 'web' ? tPlatform('web') : project.platform === 'mobile' ? tPlatform('mobile') : tPlatform('all')}
             {' · '}
-            {new Date(project.created_at).toLocaleDateString('ko-KR')}
+            {new Date(project.created_at).toLocaleDateString()}
           </p>
         </div>
         <div className="flex gap-2">
@@ -124,7 +123,7 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
             ) : (
               <Copy className="mr-2 h-4 w-4" />
             )}
-            복제
+            {t('detail.copy')}
           </Button>
           <Button
             variant="outline"
@@ -137,12 +136,12 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
-            다시 생성
+            {t('detail.regenerate')}
           </Button>
           {(project.status === 'completed' || genStatus === 'completed') && (
             <Button size="sm" onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
-              다운로드
+              {t('detail.download')}
             </Button>
           )}
         </div>
@@ -153,7 +152,7 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
           <CardContent className="py-12">
             <div className="flex flex-col items-center">
               <Loader2 className="h-10 w-10 animate-spin text-brand" />
-              <p className="mt-4 text-sm font-medium text-text-primary">에셋 재생성 중...</p>
+              <p className="mt-4 text-sm font-medium text-text-primary">{t('status.generating')}</p>
               <div className="mt-4 w-full max-w-sm">
                 <div className="h-2 w-full rounded-full bg-surface-secondary">
                   <div
@@ -169,10 +168,10 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
 
       {!isGenerating && (currentStatus === 'completed' || project.status === 'completed') && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            {showWeb && <TabsTrigger value="web">Web</TabsTrigger>}
-            {showMobile && <TabsTrigger value="mobile">Mobile</TabsTrigger>}
-            <TabsTrigger value="code">Code</TabsTrigger>
+            <TabsList>
+            {showWeb && <TabsTrigger value="web">{tPlatform('web')}</TabsTrigger>}
+            {showMobile && <TabsTrigger value="mobile">{tPlatform('mobile')}</TabsTrigger>}
+            <TabsTrigger value="code">{t('detail.code')}</TabsTrigger>
           </TabsList>
 
           {showWeb && (
@@ -200,13 +199,13 @@ export function ProjectDetailClient({ project, primaryColor }: ProjectDetailClie
         </Tabs>
       )}
 
-      {!isGenerating && project.status === 'failed' && !isRegenerating && (
+      {!isGenerating && currentStatus === 'failed' && project.status !== 'completed' && (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-text-secondary">에셋 생성에 실패했습니다.</p>
+            <p className="text-text-secondary">{t('detail.retry')}</p>
             <Button onClick={handleRegenerate} className="mt-4">
               <RefreshCw className="mr-2 h-4 w-4" />
-              다시 생성
+              {t('detail.regenerate')}
             </Button>
           </CardContent>
         </Card>
