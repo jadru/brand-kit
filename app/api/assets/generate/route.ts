@@ -46,6 +46,37 @@ export async function POST(request: Request) {
 
     const project = projectData as Project
 
+    const { data: startedProject, error: startError } = await supabase
+      .from('projects')
+      .update({ status: 'generating', pipeline_stage: 'icon_resolve' })
+      .eq('id', projectId)
+      .eq('user_id', user.id)
+      .neq('status', 'generating')
+      .select('id')
+      .maybeSingle()
+
+    if (startError) {
+      throw new AppError(
+        startError.message,
+        'ASSET_GENERATION_START_FAILED',
+        500,
+        '에셋 생성을 시작하지 못했습니다. 잠시 후 다시 시도해주세요.'
+      )
+    }
+
+    if (!startedProject) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: 'ASSET_GENERATION_IN_PROGRESS',
+            message: '이미 에셋 생성이 진행 중입니다.',
+          },
+        },
+        { status: 409 }
+      )
+    }
+
     let brandProfile: BrandProfile | null = null
     if (project.brand_profile_id) {
       const { data: brandData } = await supabase
@@ -67,11 +98,6 @@ export async function POST(request: Request) {
     }
 
     const stylePreset = presetData as StylePreset
-
-    await supabase
-      .from('projects')
-      .update({ status: 'generating', pipeline_stage: 'icon_resolve' })
-      .eq('id', projectId)
 
     try {
       const startedAt = Date.now()

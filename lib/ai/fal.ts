@@ -2,8 +2,18 @@ import { fal, type RunOptions } from '@fal-ai/client'
 import sharp from 'sharp'
 import type { StyleDirection, ColorMode, IconStyle, CornerStyle } from '@/types/database'
 import type { Project, BrandProfile, StylePreset } from '@/types/database'
-import { composeIconPrompt } from '@/lib/prompts'
+import {
+  composeIconPrompt,
+  composeOgBackgroundPrompt,
+  getDefaultPromptConfig,
+  mergePromptConfig,
+} from '@/lib/prompts'
 import type {
+  OgPromptConfig,
+  OgLayoutStyle,
+  OgVisualElement,
+  OgTypographyStyle,
+  OgMoodTone,
   IconPromptConfig,
   IconVisualStyle,
   IconShape,
@@ -49,6 +59,7 @@ interface FalFluxInput {
 const ICON_NEGATIVE_PROMPT =
   'text, letters, words, typography, watermark, signature, blurry, low quality, ' +
   'multiple icons, busy background, photograph, realistic photo'
+const DEFAULT_OG_CONFIG = getDefaultPromptConfig().og as OgPromptConfig
 
 /**
  * AI 아이콘 생성
@@ -134,23 +145,18 @@ export async function generateOgBackground(params: GenerateOgBackgroundParams): 
   const { project, brandProfile, stylePreset, width, height } = params
 
   const primaryColor = project.primary_color_override || brandProfile?.primary_color || '#6366F1'
-  const secondaryColors = brandProfile?.secondary_colors?.length
-    ? brandProfile.secondary_colors.join(', ')
-    : null
-
-  const ogModifier = stylePreset.og_ai_style_modifier || stylePreset.ai_style_modifier || ''
+  const secondaryColors = brandProfile?.secondary_colors
+  const promptConfig = mergePromptConfig(getDefaultPromptConfig(), {
+    og: stylePresetToOgConfig(stylePreset),
+  }).og as OgPromptConfig
+  const composedPrompt = composeOgBackgroundPrompt(promptConfig, {
+    brandName: project.name,
+    primaryColor,
+    secondaryColors,
+  })
   const negativeTerms = stylePreset.icon_ai_negative_prompt || ''
 
-  // 구조화된 OG 배경 프롬프트
-  const promptParts = [
-    `A professional abstract background image for a brand called "${project.name}"`,
-    ogModifier,
-    `Primary color: ${primaryColor}`,
-    secondaryColors ? `Secondary colors: ${secondaryColors}` : null,
-    'Abstract decorative background only, no text, no logos, no human faces, no readable words, no letters',
-  ].filter(Boolean)
-
-  let prompt = promptParts.join('. ')
+  let prompt = [composedPrompt.systemPrompt, composedPrompt.userPrompt].join(' ')
 
   // 네거티브 지시사항 추가
   const avoidTerms = [
@@ -220,6 +226,87 @@ function getNumericSeed(value: unknown): number | undefined {
   return undefined
 }
 
+export function stylePresetToOgConfig(preset: StylePreset): Partial<OgPromptConfig> {
+  const knownPresets: Record<string, Partial<OgPromptConfig>> = {
+    'notion-minimal': {
+      layout: 'minimal-corner',
+      visual: 'none',
+      typography: 'minimal-clean',
+      mood: 'minimal',
+    },
+    'airbnb-3d': {
+      layout: 'centered',
+      visual: 'gradient-blob',
+      typography: 'playful-rounded',
+      mood: 'friendly',
+    },
+    'stripe-gradient': {
+      layout: 'centered',
+      visual: 'gradient-blob',
+      typography: 'bold-modern',
+      mood: 'technical',
+    },
+    'linear-dark': {
+      layout: 'left-aligned',
+      visual: 'grid-pattern',
+      typography: 'technical-mono',
+      mood: 'technical',
+    },
+    'vercel-sharp': {
+      layout: 'centered',
+      visual: 'geometric-shapes',
+      typography: 'bold-modern',
+      mood: 'bold',
+    },
+    'glassmorphism': {
+      layout: 'centered',
+      visual: 'gradient-blob',
+      typography: 'minimal-clean',
+      mood: 'creative',
+    },
+    'duolingo-playful': {
+      layout: 'card-stack',
+      visual: 'illustration',
+      typography: 'playful-rounded',
+      mood: 'energetic',
+    },
+    'figma-clean': {
+      layout: 'split-vertical',
+      visual: 'grid-pattern',
+      typography: 'minimal-clean',
+      mood: 'professional',
+    },
+  }
+
+  const layoutSource = preset.og_layout?.toLowerCase() || ''
+  const typographySource = preset.og_typography?.toLowerCase() || ''
+  const visualSource = [
+    preset.og_background,
+    preset.og_ai_style_modifier,
+    preset.ai_style_modifier,
+  ].filter(Boolean).join(' ').toLowerCase()
+  const moodSource = [
+    preset.slug,
+    preset.og_background,
+    preset.og_ai_style_modifier,
+    ...preset.best_for_styles,
+  ].join(' ').toLowerCase()
+
+  const inferred: Partial<OgPromptConfig> = {
+    layout: inferOgLayout(layoutSource),
+    visual: inferOgVisual(visualSource),
+    typography: inferOgTypography(typographySource),
+    mood: inferOgMood(moodSource),
+    customAccent: preset.og_ai_style_modifier || preset.ai_style_modifier || undefined,
+  }
+
+  return {
+    ...inferred,
+    ...knownPresets[preset.slug],
+    customAccent: inferred.customAccent,
+  }
+}
+
 function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig {
   const visualStyleMap: Record<IconStyle, IconVisualStyle> = {
     outline: 'outline-medium',
@@ -256,4 +343,72 @@ function brandProfileToPromptConfig(profile: BrandProfileInfo): IconPromptConfig
     colorScheme: colorMap[profile.colorMode],
     complexity: 'moderate',
   }
+}
+
+function inferOgLayout(layoutSource: string): OgLayoutStyle {
+  if (layoutSource.includes('left')) return 'left-aligned'
+  if (layoutSource.includes('grid')) return 'split-vertical'
+  if (layoutSource.includes('playful')) return 'card-stack'
+  if (layoutSource.includes('diagonal')) return 'diagonal-split'
+  if (layoutSource.includes('corner')) return 'minimal-corner'
+  if (layoutSource.includes('split') && layoutSource.includes('horizontal')) return 'split-horizontal'
+  if (layoutSource.includes('split')) return 'split-vertical'
+  return DEFAULT_OG_CONFIG.layout
+}
+
+function inferOgVisual(visualSource: string): OgVisualElement {
+  if (visualSource.includes('photo')) return 'photo-background'
+  if (visualSource.includes('grid')) return 'grid-pattern'
+  if (visualSource.includes('noise') || visualSource.includes('grain')) return 'noise-texture'
+  if (visualSource.includes('illustration') || visualSource.includes('mascot')) return 'illustration'
+  if (visualSource.includes('icon') || visualSource.includes('logo accent')) return 'icon-accent'
+  if (visualSource.includes('blob') || visualSource.includes('gradient') || visualSource.includes('aurora') || visualSource.includes('glass')) {
+    return 'gradient-blob'
+  }
+  if (visualSource.includes('geometric') || visualSource.includes('line') || visualSource.includes('shape') || visualSource.includes('monochrome')) {
+    return 'geometric-shapes'
+  }
+  if (visualSource.includes('pattern')) return 'abstract-pattern'
+  return DEFAULT_OG_CONFIG.visual
+}
+
+function inferOgTypography(typographySource: string): OgTypographyStyle {
+  if (typographySource.includes('mono') || typographySource.includes('code')) return 'technical-mono'
+  if (typographySource.includes('serif')) return 'elegant-serif'
+  if (typographySource.includes('editorial')) return 'editorial'
+  if (typographySource.includes('jakarta') || typographySource.includes('nunito') || typographySource.includes('rounded')) {
+    return 'playful-rounded'
+  }
+  if (typographySource.includes('regular') || typographySource.includes('light') || typographySource.includes('clean')) {
+    return 'minimal-clean'
+  }
+  if (typographySource.includes('handwritten') || typographySource.includes('script')) {
+    return 'handwritten-accent'
+  }
+  return DEFAULT_OG_CONFIG.typography
+}
+
+function inferOgMood(moodSource: string): OgMoodTone {
+  if (moodSource.includes('playful') || moodSource.includes('friendly') || moodSource.includes('warm') || moodSource.includes('cozy')) {
+    return 'friendly'
+  }
+  if (moodSource.includes('energetic') || moodSource.includes('cheerful') || moodSource.includes('vivid')) {
+    return 'energetic'
+  }
+  if (moodSource.includes('technical') || moodSource.includes('neon') || moodSource.includes('futuristic') || moodSource.includes('grid')) {
+    return 'technical'
+  }
+  if (moodSource.includes('luxury') || moodSource.includes('luxurious') || moodSource.includes('premium')) {
+    return 'luxurious'
+  }
+  if (moodSource.includes('creative') || moodSource.includes('glass') || moodSource.includes('artistic')) {
+    return 'creative'
+  }
+  if (moodSource.includes('minimal') || moodSource.includes('clean') || moodSource.includes('monochrome')) {
+    return 'minimal'
+  }
+  if (moodSource.includes('bold') || moodSource.includes('contrast') || moodSource.includes('brutalist')) {
+    return 'bold'
+  }
+  return DEFAULT_OG_CONFIG.mood
 }

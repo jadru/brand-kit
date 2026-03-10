@@ -106,7 +106,6 @@ export function WizardShell({ brandProfiles, stylePresets, user }: WizardShellPr
       })
 
       setProjectId(project.id)
-      store.reset()
       nextStep()
     } catch {
       setSaveError(tErrors('projectSaveUnknownError'))

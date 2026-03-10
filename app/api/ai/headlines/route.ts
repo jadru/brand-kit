@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { generateHeadlines } from '@/lib/ai/claude'
+import { brandProfileToMetadataConfig, generateHeadlines } from '@/lib/ai/claude'
 import { checkUsage, incrementUsage } from '@/lib/utils/rate-limit'
 import {
   handleApiError,
@@ -32,12 +32,23 @@ export async function POST(request: Request) {
       throw new UsageLimitError('AI 헤드라인', usage.limit)
     }
 
+    const promptConfig = body.promptConfig ?? (
+      body.brandStyleDirection || body.brandKeywords?.length
+        ? brandProfileToMetadataConfig({
+            platform: body.platform,
+            styleDirection: body.brandStyleDirection,
+            keywords: body.brandKeywords,
+          })
+        : undefined
+    )
+
     const result = await generateHeadlines({
       projectName: body.projectName,
       description: body.description,
       platform: body.platform,
       brandKeywords: body.brandKeywords,
       brandStyleDirection: body.brandStyleDirection,
+      promptConfig,
     })
 
     await incrementUsage(getSupabaseAdmin(), user.id, 'ai_headlines_used_this_month')

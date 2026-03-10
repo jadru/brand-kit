@@ -53,6 +53,7 @@ export {
 
 // Composer
 export {
+  composeOgBackgroundPrompt,
   composeIconPrompt,
   composeMetadataPrompt,
   getDefaultPromptConfig,

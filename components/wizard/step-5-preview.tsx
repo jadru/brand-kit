@@ -168,7 +168,7 @@ export function Step5Preview({
     document.body.removeChild(link)
   }
 
-  if (status === 'generating' || status === 'idle') {
+  if (status === 'generating') {
     return <GeneratingState progress={progress} stage={stage} />
   }
 
