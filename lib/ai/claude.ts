@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { HeadlineResponse } from '@/types/wizard'
-import { composeMetadataPrompt } from '@/lib/prompts'
+import { composeMetadataPrompt, getDefaultPromptConfig } from '@/lib/prompts'
 import type { MetadataPromptConfig } from '@/lib/prompts'
 import { AI_CONFIG } from '@/lib/config/ai'
 
@@ -43,6 +43,98 @@ interface GenerateHeadlinesParams {
   brandKeywords?: string[]
   brandStyleDirection?: string
   promptConfig?: MetadataPromptConfig
+}
+
+interface MetadataBrandProfileInput {
+  platform: string
+  styleDirection?: string
+  keywords?: string[]
+  language?: MetadataPromptConfig['language']
+}
+
+const DEFAULT_METADATA_CONFIG = getDefaultPromptConfig().metadata as MetadataPromptConfig
+
+function normalizeKeywords(keywords?: string[]) {
+  return keywords
+    ?.map((keyword) => keyword.trim())
+    .filter(Boolean) ?? []
+}
+
+function inferMetadataAudience(keywords: string[]): MetadataPromptConfig['audience'] {
+  const lowerKeywords = keywords.map((keyword) => keyword.toLowerCase())
+
+  if (lowerKeywords.some((keyword) =>
+    ['developer', 'dev', 'api', 'sdk', 'engineering', 'code'].some((term) => keyword.includes(term))
+  )) {
+    return 'developer'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['design', 'designer', 'creative', 'branding', 'ui', 'ux'].some((term) => keyword.includes(term))
+  )) {
+    return 'designer'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['student', 'education', 'learning', 'course'].some((term) => keyword.includes(term))
+  )) {
+    return 'student'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['startup', 'founder', 'launch', 'growth'].some((term) => keyword.includes(term))
+  )) {
+    return 'startup'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['luxury', 'premium', 'exclusive', 'high-end'].some((term) => keyword.includes(term))
+  )) {
+    return 'b2c-premium'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['enterprise', 'compliance', 'governance', 'security', 'integration'].some((term) => keyword.includes(term))
+  )) {
+    return 'b2b-enterprise'
+  }
+
+  if (lowerKeywords.some((keyword) =>
+    ['b2b', 'business', 'saas', 'smb', 'team', 'workspace', 'company'].some((term) => keyword.includes(term))
+  )) {
+    return 'b2b-smb'
+  }
+
+  return DEFAULT_METADATA_CONFIG.audience
+}
+
+export function brandProfileToMetadataConfig(
+  input: MetadataBrandProfileInput
+): MetadataPromptConfig {
+  const keywords = normalizeKeywords(input.keywords)
+
+  const toneMap: Record<string, MetadataPromptConfig['tone']> = {
+    minimal: 'professional',
+    playful: 'friendly',
+    corporate: 'formal',
+    tech: 'technical',
+    custom: DEFAULT_METADATA_CONFIG.tone,
+  }
+
+  const contentTypeMap: Record<string, MetadataPromptConfig['contentType']> = {
+    web: 'product-landing',
+    mobile: 'app-store',
+    all: 'saas-homepage',
+  }
+
+  return {
+    ...DEFAULT_METADATA_CONFIG,
+    tone: toneMap[input.styleDirection || 'custom'] || DEFAULT_METADATA_CONFIG.tone,
+    audience: inferMetadataAudience(keywords),
+    contentType: contentTypeMap[input.platform] || DEFAULT_METADATA_CONFIG.contentType,
+    focusKeywords: keywords,
+    language: input.language || DEFAULT_METADATA_CONFIG.language,
+  }
 }
 
 /**

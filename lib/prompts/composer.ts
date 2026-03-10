@@ -1,11 +1,18 @@
 import type {
   ComposedPrompt,
+  OgPromptConfig,
   IconPromptConfig,
   MetadataPromptConfig,
   FullPromptConfig,
   PromptCategory,
 } from './types'
 import { resolveConflicts } from './conflict-resolver'
+import {
+  ogLayoutCategories,
+  ogVisualCategories,
+  ogTypographyCategories,
+  ogMoodCategories,
+} from './categories/og-image'
 import {
   iconVisualStyleCategories,
   iconShapeCategories,
@@ -26,6 +33,52 @@ function findCategory<T extends string>(
 ): PromptCategory<T> | undefined {
   if (!id) return undefined
   return categories.find((c) => c.id === id)
+}
+
+// ========================================
+// OG Background Prompt Composer
+// ========================================
+
+export function composeOgBackgroundPrompt(
+  config: OgPromptConfig,
+  context: {
+    brandName: string
+    primaryColor: string
+    secondaryColors?: string[]
+  }
+): ComposedPrompt {
+  const selectedCategories = [
+    findCategory(ogLayoutCategories, config.layout),
+    findCategory(ogVisualCategories, config.visual),
+    findCategory(ogTypographyCategories, config.typography),
+    findCategory(ogMoodCategories, config.mood),
+  ].filter(Boolean) as PromptCategory[]
+
+  const { resolved, warnings } = resolveConflicts(selectedCategories)
+  const fragments = resolved.map((c) => c.promptFragment)
+
+  const colorFragments = [
+    `primary brand color: ${context.primaryColor}`,
+    context.secondaryColors?.length
+      ? `secondary brand colors: ${context.secondaryColors.join(', ')}`
+      : null,
+    config.customAccent?.trim() || null,
+  ].filter(Boolean) as string[]
+
+  const coreRequirements = [
+    `for the brand atmosphere of "${context.brandName}" without rendering the brand name`,
+    'abstract decorative background only',
+    'no text, no readable words, no letters, no logos',
+    'no people, no faces, no products, no UI mockups',
+    'optimized for OG and social sharing with clean safe areas for overlay text',
+  ]
+
+  return {
+    systemPrompt: 'Generate an abstract brand background image with the following direction:',
+    userPrompt: [...fragments, ...colorFragments, ...coreRequirements].join(', '),
+    fragments: [...fragments, ...colorFragments, ...coreRequirements],
+    warnings,
+  }
 }
 
 // ========================================

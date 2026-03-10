@@ -1,229 +1,99 @@
-export type Plan = 'free' | 'pro'
-export type StyleDirection = 'minimal' | 'playful' | 'corporate' | 'tech' | 'custom'
-export type ColorMode = 'mono' | 'duotone' | 'gradient' | 'vibrant'
-export type IconStyle = 'outline' | 'filled' | '3d_soft' | 'flat'
-export type CornerStyle = 'sharp' | 'rounded' | 'pill'
-export type Platform = 'web' | 'mobile' | 'all'
-export type MobileTarget = 'android' | 'ios' | 'both'
-export type IconType = 'text' | 'symbol' | 'ai_generated'
-export type ProjectStatus = 'draft' | 'generating' | 'completed' | 'failed'
-export type PipelineStage = 'icon_resolve' | 'favicons' | 'og' | 'app_icons' | 'splash' | 'zip' | 'upload'
+import type {
+  Database as SupabaseDatabase,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+  Enums,
+  Json,
+} from './supabase-generated'
 
-export interface User {
-  id: string
-  email: string
-  plan: Plan
-  lemonsqueezy_customer_id: string | null
-  lemonsqueezy_subscription_id: string | null
-  projects_used_this_month: number
-  ai_headlines_used_this_month: number
-  ai_icons_used_this_month: number
-  usage_reset_at: string
-  created_at: string
-  updated_at: string
-}
+export type Database = SupabaseDatabase
+export type GeneratedDatabase = SupabaseDatabase
+export type { Json }
 
-export interface BrandProfile {
-  id: string
-  user_id: string
-  name: string
-  style_direction: StyleDirection
-  primary_color: string
-  secondary_colors: string[]
-  color_mode: ColorMode
-  icon_style: IconStyle
-  corner_style: CornerStyle
-  typography_mood: string | null
-  keywords: string[]
-  is_default: boolean
-  created_at: string
-  updated_at: string
-}
+export type Plan = Enums<'plan_type'>
+export type StyleDirection = Enums<'style_direction'>
+export type ColorMode = Enums<'color_mode'>
+export type IconStyle = Enums<'icon_style'>
+export type CornerStyle = Enums<'corner_style'>
+export type Platform = Enums<'platform_type'>
+export type MobileTarget = Enums<'mobile_target'>
+export type IconType = Enums<'icon_type'>
+export type ProjectStatus = Enums<'project_status'>
 
-export interface StylePreset {
-  id: string
-  name: string
-  slug: string
-  is_free: boolean
-  best_for_styles: string[]
-  icon_style: string | null
-  corner_radius: number
-  shadow_style: string | null
-  color_mode: string | null
-  og_layout: string | null
-  og_typography: string | null
-  og_background: string | null
-  ai_style_modifier: string | null
-  og_ai_style_modifier: string | null
-  icon_ai_negative_prompt: string | null
-  icon_ai_prompt_template: string | null
-  preview_image_url: string | null
-  sort_order: number
-  created_at: string
-}
+// pipeline_stage is stored as TEXT in Postgres, but the app narrows it to known values.
+export type PipelineStage =
+  | 'icon_resolve'
+  | 'favicons'
+  | 'og'
+  | 'app_icons'
+  | 'splash'
+  | 'zip'
+  | 'upload'
 
-export interface Project {
-  id: string
-  user_id: string
-  brand_profile_id: string | null
-  style_preset_id: string
-  name: string
-  description: string | null
-  platform: Platform
-  mobile_target: MobileTarget | null
-  primary_color_override: string | null
+export type NotificationType = Enums<'notification_type'>
+export type FeedbackSentiment = Enums<'feedback_sentiment'>
+
+export type User = Tables<'users'>
+export type BrandProfile = Tables<'brand_profiles'>
+export type StylePreset = Tables<'style_presets'>
+export type Notification = Tables<'notifications'>
+export type Feedback = Tables<'feedback'>
+export type NpsResponse = Tables<'nps_responses'>
+
+type ProjectOverrides = {
   icon_type: IconType | null
-  icon_value: string | null
-  ai_headline: string | null
-  ai_tagline: string | null
-  ai_og_description: string | null
-  ai_short_slogan: string | null
-  assets_zip_url: string | null
+  mobile_target: MobileTarget | null
   pipeline_stage: PipelineStage | null
-  status: ProjectStatus
-  created_at: string
-  updated_at: string
-}
-
-export interface UserInsert {
-  id: string
-  email: string
-  plan?: Plan
-}
-
-export interface UserUpdate {
-  email?: string
-  plan?: Plan
-  lemonsqueezy_customer_id?: string | null
-  lemonsqueezy_subscription_id?: string | null
-  projects_used_this_month?: number
-  ai_headlines_used_this_month?: number
-  ai_icons_used_this_month?: number
-  usage_reset_at?: string
-}
-
-export interface BrandProfileInsert {
-  user_id: string
-  name: string
-  style_direction?: StyleDirection
-  primary_color?: string
-  secondary_colors?: string[]
-  color_mode?: ColorMode
-  icon_style?: IconStyle
-  corner_style?: CornerStyle
-  typography_mood?: string | null
-  keywords?: string[]
-  is_default?: boolean
-}
-
-export interface BrandProfileUpdate {
-  name?: string
-  style_direction?: StyleDirection
-  primary_color?: string
-  secondary_colors?: string[]
-  color_mode?: ColorMode
-  icon_style?: IconStyle
-  corner_style?: CornerStyle
-  typography_mood?: string | null
-  keywords?: string[]
-  is_default?: boolean
-}
-
-export interface ProjectInsert {
-  user_id: string
-  style_preset_id: string
-  name: string
   platform: Platform
-  brand_profile_id?: string | null
-  description?: string | null
-  mobile_target?: MobileTarget | null
-  primary_color_override?: string | null
-  icon_type?: IconType | null
-  icon_value?: string | null
-  ai_headline?: string | null
-  ai_tagline?: string | null
-  ai_og_description?: string | null
-  ai_short_slogan?: string | null
-  assets_zip_url?: string | null
-  pipeline_stage?: PipelineStage | null
-  status?: ProjectStatus
+  status: ProjectStatus
 }
 
-export interface ProjectUpdate {
-  brand_profile_id?: string | null
-  style_preset_id?: string
-  name?: string
-  description?: string | null
+type ProjectInsertOverrides = {
+  icon_type?: IconType | null
+  mobile_target?: MobileTarget | null
+  pipeline_stage?: PipelineStage | null
   platform?: Platform
-  mobile_target?: MobileTarget | null
-  primary_color_override?: string | null
-  icon_type?: IconType | null
-  icon_value?: string | null
-  ai_headline?: string | null
-  ai_tagline?: string | null
-  ai_og_description?: string | null
-  ai_short_slogan?: string | null
-  assets_zip_url?: string | null
-  pipeline_stage?: PipelineStage | null
   status?: ProjectStatus
 }
 
-export interface Database {
-  public: {
-    Tables: {
-      users: {
-        Row: User
-        Insert: UserInsert
-        Update: UserUpdate
-      }
-      brand_profiles: {
-        Row: BrandProfile
-        Insert: BrandProfileInsert
-        Update: BrandProfileUpdate
-      }
-      style_presets: {
-        Row: StylePreset
-        Insert: never
-        Update: never
-      }
-      projects: {
-        Row: Project
-        Insert: ProjectInsert
-        Update: ProjectUpdate
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      reset_monthly_usage: {
-        Args: Record<string, never>
-        Returns: void
-      }
-      increment_usage: {
-        Args: { p_user_id: string; p_field_name: string }
-        Returns: void
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-  }
+type ProjectUpdateOverrides = {
+  icon_type?: IconType | null
+  mobile_target?: MobileTarget | null
+  pipeline_stage?: PipelineStage | null
+  platform?: Platform
+  status?: ProjectStatus
 }
+
+export type Project = Omit<Tables<'projects'>, keyof ProjectOverrides> & ProjectOverrides
+export type UserInsert = TablesInsert<'users'>
+export type UserUpdate = TablesUpdate<'users'>
+export type BrandProfileInsert = TablesInsert<'brand_profiles'>
+export type BrandProfileUpdate = TablesUpdate<'brand_profiles'>
+export type StylePresetInsert = TablesInsert<'style_presets'>
+export type StylePresetUpdate = TablesUpdate<'style_presets'>
+export type NotificationInsert = TablesInsert<'notifications'>
+export type NotificationUpdate = TablesUpdate<'notifications'>
+export type FeedbackInsert = TablesInsert<'feedback'>
+export type FeedbackUpdate = TablesUpdate<'feedback'>
+export type NpsResponseInsert = TablesInsert<'nps_responses'>
+export type NpsResponseUpdate = TablesUpdate<'nps_responses'>
+export type ProjectInsert = Omit<TablesInsert<'projects'>, keyof ProjectInsertOverrides> & ProjectInsertOverrides
+export type ProjectUpdate = Omit<TablesUpdate<'projects'>, keyof ProjectUpdateOverrides> & ProjectUpdateOverrides
 
 export const PLAN_LIMITS = {
   free: {
-    brand_profiles: 2, // 핵심 가치 경험을 위해 1→2개로 상향
+    brand_profiles: 2,
     projects_per_month: 3,
     ai_headlines_per_month: 10,
-    ai_icons_per_month: 3, // Free 사용자도 AI 아이콘 맛보기 허용
+    ai_icons_per_month: 3,
     style_presets: 'free_only' as const,
   },
   pro: {
     brand_profiles: 5,
     projects_per_month: Infinity,
     ai_headlines_per_month: Infinity,
-    ai_icons_per_month: 50, // Pro 플랜 월간 제한 명시
+    ai_icons_per_month: 50,
     style_presets: 'all' as const,
   },
 } as const

@@ -1,4 +1,5 @@
 import type { Platform, MobileTarget, IconType } from './database'
+import type { MetadataPromptConfig } from '@/lib/prompts'
 
 export interface WizardBrandData {
   brandProfileId: string | null
@@ -35,6 +36,7 @@ export interface HeadlineRequest {
   platform: Platform
   brandKeywords?: string[]
   brandStyleDirection?: string
+  promptConfig?: MetadataPromptConfig
 }
 
 export interface HeadlineResponse {
