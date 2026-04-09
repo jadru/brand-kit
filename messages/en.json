@@ -196,9 +196,9 @@
           "role": "Agency Owner"
         }
       },
-      "trustBadge1": "SOC 2 Compliant",
-      "trustBadge2": "99.9% Uptime",
-      "trustBadge3": "Fast Support"
+      "trustBadge1": "Free plan available",
+      "trustBadge2": "Launch-ready ZIP export",
+      "trustBadge3": "Code snippets included"
     },
     "faq": {
       "sectionLabel": "FAQ",
