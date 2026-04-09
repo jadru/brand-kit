@@ -729,26 +729,30 @@
 
   "metadata": {
     "title": {
-      "default": "BrandKit - AI 브랜드 에셋 생성기",
+      "default": "BrandKit - AI 브랜드 에셋 자동 생성 | Favicon, OG Image, 앱 아이콘",
       "template": "%s | BrandKit"
     },
-    "description": "브랜드 스타일을 저장하고 모든 브랜드 에셋을 자동 생성하세요",
-    "keywords": "브랜드 에셋, 파비콘 생성기, OG 이미지, 앱 아이콘, 브랜드 아이덴티티, AI 카피라이팅",
+    "description": "브랜드 프로필을 한 번 저장하면 BrandKit이 Favicon, OG Image, 앱 아이콘, 소셜 미리보기까지 다음 출시용 브랜드 에셋을 자동 생성합니다. 무료로 시작하고 더 빠르게 일관된 브랜드를 출시하세요.",
+    "keywords": "브랜드 에셋 생성기, 파비콘 생성기, OG 이미지, 앱 아이콘, 소셜 미리보기, 브랜드 아이덴티티, AI 카피라이팅",
     "privacy": {
       "title": "개인정보처리방침",
-      "description": "BrandKit이 개인정보를 수집, 사용, 보호하는 방법을 알아보세요"
+      "description": "BrandKit이 데이터, 계정, 생성된 에셋을 어떻게 다루는지 확인하세요."
     },
     "terms": {
       "title": "이용약관",
-      "description": "BrandKit 서비스 이용 약관을 확인하세요"
+      "description": "BrandKit으로 출시용 브랜드 에셋을 생성하고 관리할 때 적용되는 약관을 확인하세요."
     },
     "login": {
       "title": "로그인",
-      "description": "BrandKit 계정에 로그인하여 브랜드 에셋을 관리하세요"
+      "description": "브랜드 프로필, 출시 에셋, 다운로드를 계속 관리하려면 로그인하세요."
     },
     "signup": {
       "title": "회원가입",
-      "description": "무료 BrandKit 계정을 만들고 AI로 브랜드 에셋을 생성하세요"
+      "description": "무료 BrandKit 계정을 만들고 하나의 브랜드 프로필로 출시용 브랜드 에셋을 생성하세요."
+    },
+    "forgotPassword": {
+      "title": "비밀번호 재설정",
+      "description": "안전한 재설정 링크를 받아 저장한 브랜드 프로필과 출시 에셋으로 다시 돌아오세요."
     },
     "dashboard": {
       "title": "대시보드",

@@ -1,16 +1,16 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
+import { getSiteUrl } from '@/lib/seo/site-url'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brandkit.app'
+  const baseUrl = getSiteUrl()
   const locales = routing.locales
 
   const publicPages = [
     { path: '', changeFrequency: 'weekly' as const, priority: 1.0 },
-    { path: '/login', changeFrequency: 'monthly' as const, priority: 0.6 },
-    { path: '/signup', changeFrequency: 'monthly' as const, priority: 0.7 },
-    { path: '/privacy', changeFrequency: 'yearly' as const, priority: 0.3 },
-    { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.3 },
+    { path: '/demo', changeFrequency: 'weekly' as const, priority: 0.8 },
+    { path: '/privacy', changeFrequency: 'monthly' as const, priority: 0.3 },
+    { path: '/terms', changeFrequency: 'monthly' as const, priority: 0.3 },
   ]
 
   const entries: MetadataRoute.Sitemap = []
