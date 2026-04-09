@@ -729,26 +729,30 @@
 
   "metadata": {
     "title": {
-      "default": "BrandKit - AI Brand Asset Generator",
+      "default": "BrandKit - AI Brand Asset Generator | Favicon, OG Image & App Icons",
       "template": "%s | BrandKit"
     },
-    "description": "Save your brand style and auto-generate all brand assets",
-    "keywords": "brand assets, favicon generator, og image, app icon, brand identity, AI copywriting",
+    "description": "Save one brand profile and let BrandKit generate favicons, OG images, app icons, and social previews for your next launch. Start free and ship a consistent brand system faster.",
+    "keywords": "brand asset generator, favicon generator, og image, app icon, social preview, brand identity, AI copywriting",
     "privacy": {
       "title": "Privacy Policy",
-      "description": "Learn how BrandKit collects, uses, and protects your personal information"
+      "description": "Review how BrandKit handles your data, accounts, and generated assets."
     },
     "terms": {
       "title": "Terms of Service",
-      "description": "Read the terms and conditions for using BrandKit services"
+      "description": "Read the terms for using BrandKit to create and manage launch-ready brand assets."
     },
     "login": {
       "title": "Log in",
-      "description": "Sign in to your BrandKit account to manage your brand assets"
+      "description": "Sign in to keep your brand profiles, launch assets, and downloads in sync."
     },
     "signup": {
       "title": "Sign up",
-      "description": "Create a free BrandKit account and start generating brand assets with AI"
+      "description": "Create a free BrandKit account and generate launch-ready brand assets from one saved brand profile."
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "description": "Send a secure reset link and get back to your saved brand profiles and launch assets."
     },
     "dashboard": {
       "title": "Dashboard",

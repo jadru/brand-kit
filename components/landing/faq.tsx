@@ -3,30 +3,21 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { ChevronDown, HelpCircle, Mail, ArrowRight } from 'lucide-react'
-
-const faqItems = [
-  { id: '1', questionKey: 'faq.items.1.question', answerKey: 'faq.items.1.answer' },
-  { id: '2', questionKey: 'faq.items.2.question', answerKey: 'faq.items.2.answer' },
-  { id: '3', questionKey: 'faq.items.3.question', answerKey: 'faq.items.3.answer' },
-  { id: '4', questionKey: 'faq.items.4.question', answerKey: 'faq.items.4.answer' },
-  { id: '5', questionKey: 'faq.items.5.question', answerKey: 'faq.items.5.answer' },
-  { id: '6', questionKey: 'faq.items.6.question', answerKey: 'faq.items.6.answer' },
-]
+import { getLandingFaqItems } from '@/lib/seo/faq'
 
 function FAQItem({
-  questionKey,
-  answerKey,
+  question,
+  answer,
   isOpen,
   onToggle,
   index,
 }: {
-  questionKey: string
-  answerKey: string
+  question: string
+  answer: string
   isOpen: boolean
   onToggle: () => void
   index: number
 }) {
-  const t = useTranslations('landing')
   const panelMaxHeightClass = isOpen ? 'max-h-[9999px] opacity-100' : 'max-h-0 opacity-0'
 
   return (
@@ -60,13 +51,8 @@ function FAQItem({
           >
             {index + 1}
           </span>
-          <span
-            className={`
-              text-sm font-medium transition-colors sm:text-base
-              ${isOpen ? 'text-text-primary' : 'text-text-primary'}
-            `}
-          >
-            {t(questionKey)}
+          <span className="text-sm font-medium text-text-primary transition-colors sm:text-base">
+            {question}
           </span>
         </div>
         <div
@@ -91,9 +77,7 @@ function FAQItem({
       >
         <div className="px-6 pb-5">
           <div className="ml-10 border-l-2 border-accent/20 pl-4">
-            <p className="text-sm leading-relaxed text-text-secondary">
-              {t(answerKey)}
-            </p>
+            <p className="text-sm leading-relaxed text-text-secondary">{answer}</p>
           </div>
         </div>
       </div>
@@ -104,6 +88,7 @@ function FAQItem({
 export function FAQ() {
   const t = useTranslations('landing')
   const [openId, setOpenId] = useState<string | null>(null)
+  const faqItems = getLandingFaqItems(t)
 
   const toggle = (id: string) => {
     setOpenId(openId === id ? null : id)
@@ -136,8 +121,8 @@ export function FAQ() {
           {faqItems.map((item, idx) => (
             <FAQItem
               key={item.id}
-              questionKey={item.questionKey}
-              answerKey={item.answerKey}
+              question={item.question}
+              answer={item.answer}
               isOpen={openId === item.id}
               onToggle={() => toggle(item.id)}
               index={idx}
